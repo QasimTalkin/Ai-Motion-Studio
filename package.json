@@ -1,0 +1,30 @@
+{
+  "name": "ai-motion-studio",
+  "version": "1.0.0",
+  "description": "A self-contained AI motion-graphics studio: code-rendered films with a seek(t) engine, closed-form springs, synthesized sound and a critique loop.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "doctor": "node studio/doctor.mjs",
+    "new": "node studio/new.mjs",
+    "preview": "node studio/preview.mjs",
+    "stills": "node studio/stills.mjs",
+    "check": "node studio/check.mjs",
+    "render": "node studio/render.mjs",
+    "audio": "node studio/audio.mjs",
+    "sheets": "node studio/sheets.mjs",
+    "film": "node studio/film.mjs",
+    "demo": "node studio/film.mjs examples/showreel",
+    "postinstall": "node studio/postinstall.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/source-serif-4": "^5.3.0",
+    "ffmpeg-static": "^5.2.0",
+    "playwright": "1.56.1"
+  }
+}
