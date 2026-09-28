@@ -83,3 +83,8 @@ Medium for small fixes and re-renders, xhigh for new films, max when the first 3
 - `.claude/skills/` motion-reel, critique-pass, director-brief. `.claude/agents/` motion-critic,
   sound-designer, shot-animator (subagents for long productions).
 - API keys live in `.env` (see `.env.example`). Refer to them by name, never paste values.
+
+## Never commit client work
+This is a public open-source repo. `films/` is git-ignored on purpose: customer and business films,
+their assets, names and brands stay local. Never `git add -f` anything under `films/`, and never mention a
+client or business in commits, docs or examples. Examples in `examples/` use fictional brands only.
