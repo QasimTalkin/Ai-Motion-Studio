@@ -32,7 +32,7 @@ Never ask a beginner to write code or pick libraries. Pick sensible defaults and
 | `npm run render <film> -- [--format 9:16] [--from 4 --to 6] [--draft]` | Silent video |
 | `npm run audio <film>` | Score + SFX → `out/mix.wav` at -14 LUFS, plus `out/beats.json` |
 | `npm run sheets <film> -- [--at 4.2]` | Contact sheet, strip, phone test, loop check, poster |
-| `npm run film <film> -- [--draft] [--format 9:16]` | Everything above, all formats, muxed `final.mp4` |
+| `npm run film <film> -- [--draft] [--format 9:16]` | Everything above for each format in the film's `formats`, muxed `final.mp4` |
 | `python studio/beats.py song.wav > beats.json` | Measure a supplied track (needs numpy, librosa, soundfile) |
 
 ## Render contract
@@ -44,6 +44,7 @@ Never ask a beginner to write code or pick libraries. Pick sensible defaults and
 - Never use `will-change` on anything the camera scales (blurry text). Canvas films don't need it at all.
 - Write scenes against the stage layout (`S.W`, `S.H`, `S.u`, `S.pick({portrait, square, landscape})`),
   never fixed pixels, so 9:16, 1:1 and 16:9 all come from one timeline. Reframe, don't crop.
+- Deliver 9:16 only by default (`formats: ['9:16']`). Add 1:1 or 16:9 only when the user asks for them.
 - A value with more than one target uses `track()` (one spring per change), never a restarted spring.
 
 ## Look

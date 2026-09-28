@@ -62,7 +62,7 @@ pipeline, so Claude will:
 1. scaffold `films/<name>/` and write a shot list on the beat grid,
 2. build the film as one `index.html` using the springs and layout helpers in `lib/`,
 3. render one frame per beat, **look at it**, score it, and fix the 3 worst problems (3+ rounds),
-4. synthesize the score and SFX, mix to -14 LUFS, render 9:16, 1:1 and 16:9,
+4. synthesize the score and SFX, mix to -14 LUFS, render 9:16 (1:1 and 16:9 on request),
 5. hand you `final.mp4` for every format, plus a contact sheet, phone test and poster.
 
 For best results start Claude Code at **xhigh** effort for new films (`/model`, then set effort), **max** for a launch
@@ -84,7 +84,7 @@ flowchart LR
   B -->|ffmpeg tmix + H.264| C["silent.mp4"]
   A -->|cues + beat grid| D["score + SFX<br/>synthesized in code"]
   D -->|loudnorm -14 LUFS| E["mix.wav"]
-  C --> F["final.mp4<br/>9:16 · 1:1 · 16:9"]
+  C --> F["final.mp4<br/>9:16 (1:1 · 16:9 on request)"]
   E --> F
   F --> G["contact · strip · phone<br/>poster · loop check"]
   G -->|Claude looks, scores, fixes| A
