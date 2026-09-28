@@ -5,7 +5,7 @@
 // The course's route A: the page paints any moment with window.seek(t); headless Chrome walks time,
 // ffmpeg blends SUB subframes per frame for motion blur. Sound comes from the film's window.CUES.
 import { chromium } from 'playwright';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, existsSync, writeFileSync } from 'node:fs';
 import { resolve, basename, extname, join, dirname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -28,6 +28,7 @@ mkdirSync(OUT, { recursive: true });
 
 const localFfmpeg = join(ROOT, 'node_modules/ffmpeg-static/ffmpeg' + (process.platform === 'win32' ? '.exe' : ''));
 const FF = process.env.FFMPEG_PATH || (existsSync(localFfmpeg) ? localFfmpeg : 'ffmpeg');
+if (spawnSync(FF, ['-version']).error) { console.error('ffmpeg not found. Run ./install.sh first.'); process.exit(1); }
 const ffmpeg = (args, opts) => spawn(FF, ['-y', '-loglevel', 'error', ...args], { stdio: ['ignore', 'inherit', 'inherit'], ...opts });
 const done = (p) => new Promise((r, j) => p.on('close', (c) => (c ? j(new Error('ffmpeg failed')) : r())));
 
