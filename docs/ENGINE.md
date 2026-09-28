@@ -68,6 +68,7 @@ are allowed (the later scene draws on top), which is how transitions are built.
 | `rng(seed)`, `hash(n, seed)`, `noise(t, seed)` | deterministic randomness, smooth noise |
 | `beatPulse(t, bpm, { offset, decay, every })` | 1 on each beat, decaying |
 | `typed(str, t, cps)` | typewriter substring |
+| `frameHold(t, fps)` | hold counters/text for a whole output frame so motion blur doesn't smear digits |
 | `mixColor(a, b, p)` | blend two hex colors |
 
 ## Render options
