@@ -6,7 +6,7 @@ counters with `frameHold()`, depth without a 3D engine, synthesized score + cues
 
 | Film | Pattern | Length | Formats | Render |
 |---|---|---|---|---|
-| [`showreel/`](showreel) | L1 one-liner showreel: 7 shots, 7 techniques | 15 s | 9:16 · 1:1 · 16:9 | `npm run demo` |
-| [`ui-morph/`](ui-morph) | L3 XML spec: one container, 11 UI states, seamless loop | 16 s | 9:16 · 1:1 · 16:9 | `npm run film examples/ui-morph` |
+| [`showreel/`](showreel) | L1 one-liner showreel: 7 shots, 7 techniques | 15 s | 9:16 · 16:9 | `npm run demo` |
+| [`ui-morph/`](ui-morph) | L3 XML spec: one container, 11 UI states, seamless loop | 16 s | 9:16 · 16:9 | `npm run film examples/ui-morph` |
 
 Each has `docs/review_log.md` with the real critique rounds from building it.

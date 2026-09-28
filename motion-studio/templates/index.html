@@ -16,7 +16,7 @@ window.BPM = 120;                                  // beat grid: b(n) = time of 
 const TITLE = 'Your film';
 const C = { bg: '#141413', ink: '#F0EEE6', dim: '#8A887F', accent: '#D97757' };   // one accent
 
-// ── stage: size comes from the renderer (?w=&h=), so 9:16, 1:1 and 16:9 share one timeline ──
+// ── stage: size comes from the renderer (?w=&h=), so 9:16 and 16:9 share one timeline ──
 const q = new URLSearchParams(location.search);
 const W = +q.get('w') || 1080, H = +q.get('h') || 1920, u = Math.min(W, H) / 1080;
 const cv = document.getElementById('c'); cv.width = W; cv.height = H;

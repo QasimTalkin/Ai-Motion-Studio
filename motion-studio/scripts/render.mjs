@@ -1,6 +1,6 @@
 // node scripts/render.mjs films/my-film.html            → out/my-film/final.mp4 (+ contact.png, phone.png)
 // node scripts/render.mjs films/my-film.html --stills   → out/my-film/stills.png (one frame per beat, seconds)
-// Options: --size 1080x1080 | 1920x1080   --draft (fast preview)   --music song.wav   --fps 60 --sub 4 --dur 15
+// Options: --size 1920x1080 (16:9)   --draft (fast preview)   --music song.wav   --fps 60 --sub 4 --dur 15
 //
 // The course's route A: the page paints any moment with window.seek(t); headless Chrome walks time,
 // ffmpeg blends SUB subframes per frame for motion blur. Sound comes from the film's window.CUES.

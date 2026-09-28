@@ -40,8 +40,8 @@ Never ask a beginner to write code or pick libraries. Pick sensible defaults and
 - Render with `npm run render` (60 fps, 4 subframes blended for motion blur), H.264 yuv420p, CRF 16.
 - Never use `will-change` on anything the camera scales (blurry text). Canvas films don't need it at all.
 - Write scenes against the stage layout (`S.W`, `S.H`, `S.u`, `S.pick({portrait, square, landscape})`),
-  never fixed pixels, so 9:16, 1:1 and 16:9 all come from one timeline. Reframe, don't crop.
-- Deliver 9:16 only by default (`formats: ['9:16']`). Add 1:1 or 16:9 only when the user asks for them.
+  never fixed pixels, so 9:16 and 16:9 come from one timeline. Reframe, don't crop.
+- Deliver two formats by default: `formats: ['9:16', '16:9']` (vertical first). No 1:1.
 - A value with more than one target uses `track()` (one spring per change), never a restarted spring.
 
 ## Look

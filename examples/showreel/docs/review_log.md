@@ -22,7 +22,7 @@ over 0.62 s so the overshoot shows; the sphere now assembles from a single line;
 
 Problems:
 1. 13.5-15s: tagline and command pill still small for a phone (44 / 38 units).
-2. Checked 1:1 and 16:9: reframed, not cropped. Type stack centers as a block in landscape. OK.
+2. Checked 16:9: reframed, not cropped. Type stack centers as a block in landscape. OK.
 3. Suspected missing shape labels in 16:9 at 2.9 s: false alarm, the label is in its 0.1 s swap gap (swapAlpha).
 
 Fixes: tagline 48, pill text 42, pill 420 wide.
