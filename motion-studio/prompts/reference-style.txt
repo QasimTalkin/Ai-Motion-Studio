@@ -1,0 +1,8 @@
+Reference: films/[name]/refs/ (a video, a few frames, or a folder of images I like)
+
+1. If it's a video, extract one frame every 0.5s with ffmpeg. Study them.
+2. Write films/[name]/style_guide.md: palette (hex), type (family, weight, tracking),
+   shot lengths, transition types, camera moves, texture/grain, how text enters and exits.
+3. Write films/[name]/shotlist.md for a [DURATION]s video about [SUBJECT] in THAT style.
+   Take the grammar of the reference, never its content, logos or characters.
+4. Show me both files. Wait for my OK before any code.

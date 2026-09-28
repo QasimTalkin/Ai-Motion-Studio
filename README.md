@@ -17,6 +17,9 @@ No After Effects, no timeline, no stock music. Every frame is code.
 </tr>
 </table>
 
+> **Want the 5-minute version?** [`motion-studio/`](motion-studio) is the same idea in about 20 files:
+> `./install.sh`, then ask your agent for a video. Works with Claude Code, Cursor, Codex and Windsurf.
+
 Both films above were made in this repo with the pipeline it ships, including the soundtracks.
 Their critique rounds are in [`examples/showreel/docs/review_log.md`](examples/showreel/docs/review_log.md).
 
