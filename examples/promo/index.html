@@ -1,0 +1,357 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>AI Motion Studio</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<style>html,body{margin:0;background:#141413}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// The repo's own promo: 17 s on a 120 BPM grid. See docs/shotlist.md.
+// 0 prompt · 2 code · 5 render · 8.5 sound · 11.5 self-review · 14 lockup
+// The frames on screen are real frames from examples/showreel and examples/yourbrand (assets/f*.jpg).
+import { frameHold, spring, track, trackN, clamp, range, lerp, hash, noise, beatPulse, swapAlpha, typed, mixColor, SPRING } from '/lib/motion.js';
+import { boot } from '/lib/stage.js';
+
+const DUR = 17, BPM = 120;
+const b = (n) => (60 / BPM) * n;
+const P = { bg: '#141413', ink: '#F0EEE6', dim: '#8A887F', accent: '#D97757', card: '#1F1E1B', line: '#34322E', paper: '#F0EEE6', dark: '#141413' };
+const TYPE = [260, 34];
+const at = (from, to, draw) => ({ from, to, draw: (t, S) => draw(t + from, S) });
+const FRAMES = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+const IMAGES = Object.fromEntries(FRAMES.map((i) => [`f${i}`, `assets/f${i}.jpg`]));
+const frameImg = (S, i) => S.img(`f${FRAMES[((i % FRAMES.length) + FRAMES.length) % FRAMES.length]}`);
+
+// ── helpers ─────────────────────────────────────────────────────────────────
+const measure = (S, str, size, weight, face) => { S.g.save(); S.g.letterSpacing = '0px'; S.g.font = S.font(size, weight, face); const w = S.g.measureText(str).width; S.g.restore(); return w; };
+const fit = (S, str, weight, face, maxW, maxSize) => Math.min(maxSize, (100 * maxW) / measure(S, str, 100, weight, face));
+const pickO = (S, p, l) => (S.orientation === 'portrait' ? p : l);
+
+// Kinetic headline: each word rises out of its own slot, 8th notes apart; `out` lifts it away again.
+function headline(S, t, lines, x, y, size, t0, o = {}) {
+  const { g, u } = S;
+  const { color = P.ink, accent = [], accentColor = P.accent, step = b(0.5), lh = 1.04, align = 'left', out = Infinity } = o;
+  const gone = spring(t - out, TYPE);
+  if (gone > 0.999) return;
+  let i = 0;
+  lines.forEach((words, li) => {
+    const faces = words.map((w) => (accent.includes(w) ? ['italic 400', 'display'] : [800, 'ui']));
+    const sp = measure(S, ' ', size, 800, 'ui') * 0.9;
+    const widths = words.map((w, j) => measure(S, w, size, ...faces[j]) * (faces[j][1] === 'ui' ? 0.97 : 1));
+    const total = widths.reduce((a, c) => a + c, 0) + sp * (words.length - 1);
+    let wx = align === 'center' ? x - total / 2 : x;
+    const wy = y + li * size * lh * u;
+    words.forEach((w, j) => {
+      const s = spring(t - t0 - i * step, TYPE);
+      if (s > 0.001) {
+        g.save(); g.beginPath(); g.rect(wx - 30 * u, wy - size * u * 0.98, widths[j] + 60 * u, size * u * 1.24); g.clip();
+        S.text(w, wx, wy + (1 - s) * size * u * 1.15 - gone * size * u * 1.2, { size, weight: faces[j][0], face: faces[j][1], color: accent.includes(w) ? accentColor : color, tracking: faces[j][1] === 'ui' ? -0.03 : -0.01 });
+        g.restore();
+      }
+      wx += widths[j] + sp; i++;
+    });
+  });
+}
+function sub(S, t, str, x, y, t0, o = {}) {                // one line of secondary text, rises in
+  const { align = 'left', color = P.dim, size = S.pick({ portrait: 40, landscape: 36 }), out = Infinity } = o;
+  S.text(str, x, y + (1 - spring(t - t0, TYPE)) * 24 * S.u, { size, weight: 500, color, align, alpha: swapAlpha(t, t0, out) });
+}
+
+// ── 1 + 2 · the prompt becomes code ─────────────────────────────────────────
+const PROMPT = 'Make a 17-second video about my product';
+const CODE = [
+  [['const', 'k'], [' s = ', 'i'], ['spring', 'f'], ['(t - S.', 'i'], ['beat', 'f'], ['(8), SPRING.snappy);', 'i']],
+  [['const', 'k'], [' w = ', 'i'], ['track', 'f'], ['(t, [[0, 120], [S.', 'i'], ['beat', 'f'], ['(10), 640]]);', 'i']],
+  [['g.', 'i'], ['translate', 'f'], ['(', 'i'], ['lerp', 'f'], ['(-400, 0, s), 0);', 'i']],
+  [['S.', 'i'], ['rrect', 'f'], ['(-w / 2, -60, w, 120, 60);', 'i']],
+  [['cues', 'i'], [': [{ t: S.', 'i'], ['beat', 'f'], ["(8), type: 'whoosh' }]", 'i']],
+];
+const LINE_T = (i) => b(4.8 + i);                        // each line lands on a beat
+
+function codeLayout(S) {
+  const { W, H, u } = S;
+  return pickO(S, {
+    bar: [W / 2, H * 0.66, 960 * u, 136 * u], panel: [W / 2, H * 0.47, 1000 * u, 480 * u],
+    head: [W * 0.075, H * 0.17], headSize: 132, headAlign: 'left', prev: [W / 2, H * 0.8], codeSize: 28,
+  }, {
+    bar: [W / 2, H * 0.62, 1180 * u, 128 * u], panel: [W * 0.36, H * 0.6, 1020 * u, 470 * u],
+    head: [W * 0.07, H * 0.2], headSize: 104, headAlign: 'left', prev: [W * 0.81, H * 0.6], codeSize: 26,
+  });
+}
+
+function promptCode(t, S) {
+  const { g, W, H, u } = S;
+  const Lc = codeLayout(S);
+  const ENTER = b(4), MORPH = b(4.15), K = [190, 25];
+  // hook headline
+  const hs = pickO(S, fit(S, 'prompt.', 'italic 400', 'display', W * 0.84, 340), 230);
+  headline(S, t, pickO(S, [['One'], ['prompt.']], [['One', 'prompt.']]), pickO(S, W * 0.075, W / 2), pickO(S, H * 0.36, H * 0.4), hs, 0,
+    { accent: ['prompt.'], step: b(1), align: pickO(S, 'left', 'center'), out: MORPH });
+
+  // one container: prompt bar → code panel
+  const [bx, by, bw, bh] = Lc.bar, [px, py, pw, ph] = Lc.panel;
+  const grow = spring(t - b(0.5), [200, 26]);
+  const cx = track(t, [[0, bx], [MORPH, px]], ...K), cy = track(t, [[0, by], [MORPH, py]], ...K);
+  const w = track(t, [[0, 140 * u], [b(0.5), bw], [MORPH, pw]], ...K);
+  const h = track(t, [[0, bh], [MORPH, ph]], ...K), r = track(t, [[0, bh / 2], [MORPH, 30 * u]], ...K);
+  const pr = spring(t - ENTER + 0.06, SPRING.snappy) - spring(t - ENTER - 0.08, SPRING.snappy);
+  if (grow > 0.001) {
+    g.save(); g.translate(cx, cy); g.scale(grow * (1 - 0.03 * pr), grow * (1 - 0.03 * pr));
+    g.fillStyle = P.card; S.rrect(-w / 2, -h / 2, w, h, r); g.fill();
+    g.strokeStyle = t < MORPH ? mixColor(P.line, P.accent, 0.6) : P.line; g.lineWidth = 3 * u; g.stroke();
+
+    // prompt text + send button
+    const pa = swapAlpha(t, -1, MORPH);
+    if (pa > 0) {
+      g.save(); g.globalAlpha = pa;
+      const str = typed(PROMPT, t - b(1.2), 30);
+      const size = pickO(S, 37, 42);
+      const tw = S.text(str || 'Describe your video…', -w / 2 + 50 * u, 14 * u, { size, weight: 500, color: str ? P.ink : P.dim });
+      if (str.length < PROMPT.length || Math.floor(t * 4) % 2 === 0) { g.fillStyle = P.accent; g.fillRect(-w / 2 + 54 * u + (str ? tw : 0), -26 * u, 4 * u, 52 * u); }
+      const sb = h * 0.7;
+      g.fillStyle = str.length === PROMPT.length ? P.accent : P.line;
+      g.beginPath(); g.arc(w / 2 - sb / 2 - 18 * u, 0, sb / 2, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = P.bg; g.lineWidth = 7 * u; g.lineCap = 'round'; g.lineJoin = 'round';
+      g.beginPath(); g.moveTo(w / 2 - sb / 2 - 18 * u, 18 * u); g.lineTo(w / 2 - sb / 2 - 18 * u, -18 * u);
+      g.moveTo(w / 2 - sb / 2 - 34 * u, -2 * u); g.lineTo(w / 2 - sb / 2 - 18 * u, -18 * u); g.lineTo(w / 2 - sb / 2 - 2 * u, -2 * u); g.stroke();
+      g.restore();
+    }
+    // code
+    const ca = swapAlpha(t, MORPH + 0.1);
+    if (ca > 0) {
+      g.save(); g.globalAlpha = ca;
+      S.text('film.html', -w / 2 + 44 * u, -h / 2 + 62 * u, { size: 26, face: 'mono', color: P.dim });
+      [0, 1, 2].forEach((i) => { g.fillStyle = P.line; g.beginPath(); g.arc(w / 2 - 44 * u - i * 30 * u, -h / 2 + 54 * u, 8 * u, 0, Math.PI * 2); g.fill(); });
+      g.fillStyle = P.line; g.fillRect(-w / 2, -h / 2 + 96 * u, w, 2 * u);
+      const cs = Lc.codeSize, lh = cs * 2.4 * u;
+      CODE.forEach((line, i) => {
+        const full = line.map(([s]) => s).join('');
+        const n = typed(full, t - LINE_T(i), 80).length;
+        if (!n) return;
+        let x = -w / 2 + 44 * u, used = 0;
+        const y = -h / 2 + 160 * u + i * lh;
+        S.text(String(i + 1), x, y, { size: cs, face: 'mono', color: P.line });
+        x += 50 * u;
+        for (const [s, kind] of line) {
+          const part = s.slice(0, Math.max(0, n - used)); used += s.length;
+          if (!part) break;
+          x += S.text(part, x, y, { size: cs, weight: kind === 'f' ? 700 : 400, face: 'mono', color: kind === 'f' ? P.accent : kind === 'k' ? P.dim : P.ink });
+        }
+        const active = t < LINE_T(i + 1) || i === CODE.length - 1;
+        if (active && t < b(9.6)) { g.fillStyle = P.accent; g.globalAlpha = ca * 0.14; g.fillRect(-w / 2 + 12 * u, y - cs * 1.3 * u, w - 24 * u, cs * 1.9 * u); g.globalAlpha = ca; }
+      });
+      g.restore();
+    }
+    g.restore();
+  }
+  // the shape that obeys the code
+  const [sx, sy] = Lc.prev;
+  const sw = track(t, [[0, 0], [LINE_T(0) + 0.2, 150], [LINE_T(1) + 0.2, 420], [LINE_T(3) + 0.2, 420], [LINE_T(4) + 0.2, 150]], 220, 22) * u;
+  const shH = track(t, [[0, 0], [LINE_T(0) + 0.2, 150], [LINE_T(3) + 0.2, 120]], 220, 22) * u;
+  const shX = sx + track(t, [[0, 0], [LINE_T(2) + 0.2, -60], [LINE_T(2) + 0.6, 0]], 200, 20) * u;
+  const rot = track(t, [[0, 0], [LINE_T(2) + 0.2, Math.PI]], 170, 24);
+  if (sw > 0.5) {
+    const pulse = 1 + 0.05 * beatPulse(t, BPM, { decay: 9 }) * (t > LINE_T(4) ? 1 : 0);
+    g.save(); g.translate(shX, sy); g.rotate(rot); g.scale(pulse, pulse);
+    g.fillStyle = P.accent; S.rrect(-sw / 2, -shH / 2, sw, shH, Math.min(sw, shH) / 2); g.fill();
+    g.restore();
+  }
+  headline(S, t, pickO(S, [['Claude', 'writes'], ['it', 'as', 'code.']], [['Claude', 'writes', 'it', 'as', 'code.']]), Lc.head[0], Lc.head[1], pickO(S, 116, 96), b(4.4), { accent: ['code.'] });
+}
+
+// ── 3 · rendered at 60 fps ──────────────────────────────────────────────────
+function render(t, S) {
+  const { g, W, H, u } = S;
+  const [ox, oy] = codeLayout(S).prev;
+  const R = Math.hypot(W, H) * 1.1 * spring(t - b(10), [140, 24]);
+  const exit = spring(t - b(17), [170, 26]);
+  g.translate(0, -H * exit);
+  g.save(); g.beginPath(); g.arc(ox, oy, R, 0, Math.PI * 2); g.clip();
+  g.fillStyle = P.accent; g.fillRect(0, 0, W, H);
+
+  const fh = pickO(S, H * 0.33, H * 0.46), fw = fh * 9 / 16, gap = 26 * u;
+  const cy = pickO(S, H * 0.52, H * 0.55);
+  const speed = pickO(S, 620, 760) * u;
+  const scroll = (t - b(10)) * speed + 260 * u * spring(t - b(10), SPRING.heavy);
+  g.save(); g.translate(W / 2, cy); g.rotate(-0.06); g.translate(-W / 2, -cy);
+  const band = fh + 120 * u;
+  g.fillStyle = P.dark; g.fillRect(-W, cy - band / 2, W * 3, band);
+  const step = fw + gap, first = Math.floor((scroll - W) / step) - 1;
+  for (let i = first; i < first + Math.ceil((W * 2) / step) + 3; i++) {
+    const x = i * step - scroll + W * 0.1;
+    g.fillStyle = P.accent;                                // sprocket holes
+    for (let k = 0; k < 3; k++) {
+      const hx = x + (k + 0.5) * step / 3 - 11 * u;
+      S.rrect(hx, cy - band / 2 + 20 * u, 22 * u, 24 * u, 5 * u); g.fill();
+      S.rrect(hx, cy + band / 2 - 44 * u, 22 * u, 24 * u, 5 * u); g.fill();
+    }
+    const im = frameImg(S, i);
+    if (im) g.drawImage(im, x, cy - fh / 2, fw, fh);
+  }
+  g.restore();
+
+  // counter + caption
+  const n = Math.round(1020 * range(frameHold(t), b(10.6), b(16.2)));
+  const tx = pickO(S, W * 0.075, W * 0.07);
+  const topY = pickO(S, H * 0.2, H * 0.19);
+  headline(S, t, [['Rendered', 'at', '60', 'fps.']], tx, topY, pickO(S, 100, 104), b(10.6), { color: P.dark, accent: ['60', 'fps.'], accentColor: P.paper });
+  const cs = pickO(S, 44, 40);
+  const cyText = pickO(S, H * 0.83, H * 0.92);
+  S.text(`frame ${String(n).padStart(4, '0')} / 1020`, tx, cyText, { size: cs, weight: 700, face: 'mono', color: P.dark, alpha: swapAlpha(t, b(11)) });
+  sub(S, t, '4 subframes blended for motion blur', pickO(S, tx, W - tx), cyText + pickO(S, 62, 0) * u, b(12.5), { color: P.dark, size: pickO(S, 38, 34), align: pickO(S, 'left', 'right') });
+  g.restore();
+}
+
+// ── 4 · sound on the beat ───────────────────────────────────────────────────
+const LANES = [['kick', [0, 4, 8, 12]], ['click', [2, 6, 7, 10, 14]], ['whoosh', [3, 11, 15]]];
+function sound(t, S) {
+  const { g, W, H, u } = S;
+  const enter = 1 - spring(t - b(17), [170, 26]), exit = spring(t - b(23), [170, 26]);
+  g.translate(-W * exit, H * enter);
+  g.fillStyle = P.bg; g.fillRect(0, 0, W, H);
+  const x0 = pickO(S, W * 0.075, W * 0.07), x1 = W - x0;
+
+  // waveform: bars pumped by the beat
+  const wy = pickO(S, H * 0.46, H * 0.5), amp = pickO(S, 230, 170) * u;
+  const N = pickO(S, 44, 72), bw = (x1 - x0) / N;
+  const pulse = beatPulse(t, BPM, { decay: 7 });
+  const drawIn = spring(t - b(17.4), [120, 22]);
+  for (let i = 0; i < N; i++) {
+    const ph = i / N;
+    if (ph > drawIn) break;
+    const e = 0.18 + 0.55 * Math.abs(Math.sin(ph * 9 + t * 5.5)) * (0.5 + 0.5 * hash(i + Math.floor(t * 8) * 97, 3)) + 0.45 * pulse * Math.exp(-Math.abs(ph - 0.5) * 3);
+    const hh = amp * clamp(e, 0.05, 1);
+    g.fillStyle = Math.abs(ph - range(t, b(17.4), b(23)) ) < 0.03 ? P.accent : mixColor(P.line, P.ink, 0.35 + 0.4 * e);
+    S.rrect(x0 + i * bw + bw * 0.18, wy - hh / 2, bw * 0.64, hh, bw * 0.32); g.fill();
+  }
+  // playhead across the waveform
+  const phx = x0 + (x1 - x0) * range(t, b(17.4), b(23));
+  g.fillStyle = P.accent; g.fillRect(phx - 2 * u, wy - amp * 0.62, 4 * u, amp * 1.24);
+
+  // sequencer: 3 lanes × 16 steps, lit as the playhead passes
+  const sy = pickO(S, H * 0.64, H * 0.73), cell = (x1 - x0 - 170 * u) / 16, rowH = pickO(S, 70, 58) * u;
+  const stepNow = Math.floor((t - b(17.4)) / b(0.5 * 0.75));
+  LANES.forEach(([name, hits], li) => {
+    const y = sy + li * (rowH + 16 * u);
+    const la = swapAlpha(t, b(18) + li * 0.08);
+    S.text(name, x0, y + rowH * 0.62, { size: pickO(S, 30, 28), face: 'mono', color: P.dim, alpha: la });
+    for (let s = 0; s < 16; s++) {
+      const on = hits.includes(s), cx = x0 + 170 * u + s * cell;
+      const pop = spring(t - b(18) - s * 0.02 - li * 0.06, SPRING.snappy);
+      if (pop <= 0) continue;
+      const lit = on && stepNow >= s && stepNow - s < 3;
+      g.fillStyle = on ? (lit ? P.accent : mixColor(P.line, P.accent, 0.45)) : P.card;
+      const k = pop * (lit ? 1.08 : 1);
+      S.rrect(cx + cell * (1 - 0.8 * k) / 2, y + rowH * (1 - k) / 2, cell * 0.8 * k, rowH * k, 10 * u); g.fill();
+    }
+  });
+  headline(S, t, pickO(S, [['Sound,'], ['synthesized'], ['on', 'the', 'beat.']], [['Sound,', 'synthesized', 'on', 'the', 'beat.']]), x0, pickO(S, H * 0.13, H * 0.2), pickO(S, 104, 96), b(17.6), { accent: ['beat.'] });
+  sub(S, t, 'Score + SFX in code · mixed to -14 LUFS', x0, pickO(S, H * 0.88, H * 0.28 + 30 * u), b(19.5));
+}
+
+// ── 5 · it reviews itself ───────────────────────────────────────────────────
+function review(t, S) {
+  const { g, W, H, u } = S;
+  const enter = 1 - spring(t - b(23), [170, 26]);
+  g.translate(W * enter, 0);
+  g.fillStyle = P.paper; g.fillRect(0, 0, W, H);
+  const collapse = spring(t - b(27.6), [220, 28]);
+  g.translate(W / 2, H / 2); g.scale(1 - collapse, 1 - collapse); g.translate(-W / 2, -H / 2);
+
+  const cols = 4, rows = 2;
+  const gx = pickO(S, W * 0.075, W * 0.52), gw = pickO(S, W * 0.85, W * 0.43);
+  const gap = 18 * u, tw = (gw - gap * (cols - 1)) / cols, th = tw * 16 / 9;
+  const gy = pickO(S, H * 0.36, (H - (th * rows + gap)) / 2);
+  const BAD = 5, FLAG = b(24.6), FIX = b(26);
+  for (let i = 0; i < cols * rows; i++) {
+    const x = gx + (i % cols) * (tw + gap), y = gy + Math.floor(i / cols) * (th + gap);
+    const s = spring(t - b(23.4) - i * 0.07, [260, 24]);
+    if (s <= 0) continue;
+    g.save(); g.translate(x + tw / 2, y + th / 2); g.scale(s, s); g.translate(-x - tw / 2, -y - th / 2);
+    const im = frameImg(S, [0, 3, 7, 9, 10, 8, 11, 12][i]);
+    g.save(); S.rrect(x, y, tw, th, 10 * u); g.clip();
+    if (i === BAD && t < FIX) g.filter = `blur(${(5 * u).toFixed(2)}px)`;
+    if (im) g.drawImage(im, x, y, tw, th);
+    g.restore();
+    if (i === BAD) {                                       // flagged, then fixed
+      const f = spring(t - FLAG, SPRING.snappy);
+      if (f > 0) {
+        g.strokeStyle = P.accent; g.lineWidth = 7 * u;
+        S.rrect(x - 8 * u, y - 8 * u, tw + 16 * u, th + 16 * u, 16 * u); g.globalAlpha = clamp(f); g.stroke(); g.globalAlpha = 1;
+        const bs = 96 * u * f, bx = x + tw - bs * 0.55, by = y - bs * 0.45;
+        g.fillStyle = t < FIX ? P.accent : P.dark;
+        g.beginPath(); g.arc(bx, by, bs / 2, 0, Math.PI * 2); g.fill();
+        S.text(t < FIX ? '6' : '9', bx, by + 15 * u, { size: 44, weight: 800, color: P.paper, align: 'center', alpha: f > 0.3 ? 1 : 0 });
+      }
+    }
+    g.restore();
+  }
+  const note = t < FIX ? 'frame 5: counter smears in the blur · 6/10' : 'fixed: digits hold per frame · 9/10';
+  const ny = pickO(S, gy + (th * rows + gap) + 80 * u, H * 0.66);
+  const nx = pickO(S, W * 0.075, W * 0.07);
+  S.text(note, nx, ny + (1 - spring(t - (t < FIX ? FLAG : FIX), TYPE)) * 20 * u, { size: pickO(S, 34, 30), face: 'mono', color: t < FIX ? P.accent : P.dark, alpha: swapAlpha(t, t < FIX ? FLAG : FIX, t < FIX ? FIX : Infinity) });
+  headline(S, t, [['It', 'reviews'], ['itself.']], nx, pickO(S, H * 0.16, H * 0.36), pickO(S, 124, 120), b(23.5), { color: P.dark, accent: ['itself.'] });
+  sub(S, t, 'Scores every beat, fixes the weak frames.', nx, pickO(S, H * 0.16 + 260 * u, H * 0.36 + 220 * u), b(24), { color: '#6B6A63' });
+}
+
+// ── 6 · lockup ──────────────────────────────────────────────────────────────
+function lockup(t, S) {
+  const { g, W, H, u } = S;
+  const size = fit(S, 'AI Motion Studio', 700, 'display', W * 0.84, pickO(S, 124, 128));
+  const url = 'github.com/QasimTalkin/Ai-Motion-Studio';
+  const urlSize = fit(S, url, 400, 'mono', W * 0.78, 36);
+  const groupH = (200 + 60 + size + 320) * u;
+  const cx = W / 2 + noise(t * 0.5, 4) * 3 * u, markY = H / 2 - groupH / 2 + 100 * u;
+  const hit = b(28);
+  const m = spring(t - hit, SPRING.heavy), ms = lerp(16, 200, m) * u;
+  g.fillStyle = P.accent;
+  S.rrect(cx - ms / 2, markY - ms / 2, ms, ms, lerp(8, 48, m) * u); g.fill();
+  const draw = range(t, hit + 0.15, hit + 0.6);           // the mark is a spring response curve
+  if (draw > 0) {
+    g.save(); g.beginPath(); g.rect(cx - ms / 2, markY - ms / 2, ms, ms); g.clip();
+    g.strokeStyle = P.bg; g.lineWidth = 12 * u; g.lineCap = 'round'; g.beginPath();
+    for (let i = 0; i <= 60 * draw; i++) {
+      const x = i / 60, y = spring(x * 0.62, SPRING.playful);
+      const px = cx - 66 * u + x * 132 * u, py = markY + 46 * u - y * 72 * u;
+      i ? g.lineTo(px, py) : g.moveTo(px, py);
+    }
+    g.stroke(); g.restore();
+  }
+  const wy = markY + ms / 2 + (size + 60) * u;
+  g.save(); g.beginPath(); g.rect(0, wy - size * u, W, size * u * 1.25); g.clip();
+  S.text('AI Motion Studio', cx, wy + (1 - spring(t - b(29), TYPE)) * size * u, { size, weight: 700, face: 'display', color: P.ink, align: 'center', tracking: -0.02 });
+  g.restore();
+  S.text('Motion design from one prompt.', cx, wy + 84 * u + (1 - spring(t - b(30), TYPE)) * 24 * u,
+    { size: pickO(S, 50, 46), weight: 'italic 400', face: 'display', color: P.ink, align: 'center', alpha: swapAlpha(t, b(30)) });
+  S.text('Free & open source', cx, wy + 300 * u + (1 - spring(t - b(31.5), TYPE)) * 20 * u, { size: pickO(S, 34, 30), weight: 500, color: P.dim, align: 'center', alpha: swapAlpha(t, b(31.5)) });
+  const pill = spring(t - b(31), SPRING.snappy), pw = (measure(S, url, urlSize, 400, 'mono') + 90 * u) * pill, py = wy + 190 * u;
+  if (pill > 0.01) {
+    g.strokeStyle = P.accent; g.lineWidth = 3 * u;
+    S.rrect(cx - pw / 2, py - 44 * u, pw, 88 * u, 44 * u); g.stroke();
+    S.text(url, cx, py + 13 * u, { size: urlSize, face: 'mono', color: P.ink, align: 'center', alpha: swapAlpha(t, b(31)) });
+  }
+}
+
+boot({
+  title: 'AI Motion Studio · promo', dur: DUR, bpm: BPM, formats: ['9:16', '16:9'], palette: P, images: IMAGES,
+  music: { style: 'pulse', key: 'A', seed: 5, breaks: [6], end: b(28) },
+  cues: [
+    { t: 0, type: 'thump' }, { t: b(1), type: 'thump', gain: 0.8 },
+    ...Array.from({ length: 20 }, (_, i) => ({ t: b(1.2) + (i * 2) / 30, type: 'type', gain: 0.4 })),
+    { t: b(4), type: 'click' }, { t: b(4.15), type: 'whoosh' },
+    ...CODE.map((_, i) => ({ t: LINE_T(i), type: 'tick', gain: 0.6 })), ...CODE.map((_, i) => ({ t: LINE_T(i) + 0.2, type: 'pop', gain: 0.5 })),
+    { t: b(10), type: 'whoosh' }, { t: b(10.6), type: 'swipe' },
+    ...Array.from({ length: 18 }, (_, i) => ({ t: b(11) + i * 0.13, type: 'tick', gain: 0.3 })), { t: b(16.2), type: 'click' },
+    { t: b(17), type: 'whoosh' }, { t: b(19), type: 'swipe', gain: 0.6 },
+    { t: b(23), type: 'whoosh' }, ...Array.from({ length: 8 }, (_, i) => ({ t: b(23.4) + i * 0.07, type: 'tick', gain: 0.5 })),
+    { t: b(24.6), type: 'glitch' }, { t: b(26), type: 'click' }, { t: b(26.05), type: 'chime' },
+    { t: b(27.6), type: 'whoosh', gain: 0.8 }, { t: b(28), type: 'riser', gain: 0.8 }, { t: b(28), type: 'impact' },
+    { t: b(29), type: 'thump', gain: 0.4 }, { t: b(30), type: 'pop', gain: 0.5 }, { t: b(31), type: 'click' },
+  ],
+  scenes: [
+    at(0, b(10.8), promptCode),
+    at(b(10), b(17.8), render),
+    at(b(17), b(23.8), sound),
+    at(b(23), b(28.4), review),
+    at(b(28), DUR, lockup),
+  ],
+});
+</script>
