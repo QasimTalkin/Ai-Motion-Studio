@@ -2,7 +2,7 @@
 
 **Logline:** most websites just sit there. A lean Ottawa studio that works like a shinobi (quiet,
 fast, no layers in between) builds ones that bring in customers, at published prices.
-**Duration / BPM / formats:** 136 s (2:16) · 120 BPM (beat 0.5 s, bar 2 s) · 9:16, 1:1, 16:9
+**Duration / BPM / formats:** 136 s (2:16) · 120 BPM (beat 0.5 s, bar 2 s) · 9:16 (reframes to 1:1 and 16:9 on request)
 **Music:** original score in code (`score.mjs`): D hirajoshi koto + taiko over a modern kit.
 Sections: taiko cold open → half-time tension → full groove at 22 s → break at 96 s → soft bed for
 voices at 108 s → peak for the promises → final hit at 130 s, ring out.

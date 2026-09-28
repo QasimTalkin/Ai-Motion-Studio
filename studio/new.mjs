@@ -1,4 +1,5 @@
 // npm run new <name> -- [--dur 15] [--format 9:16] [--formats 9:16,1:1,16:9] [--bpm 120] [--title "My Film"]
+// Default is 9:16 only. Add 1:1 / 16:9 with --formats only when the user asks for them.
 // Scaffolds films/<name>/ from templates/film: index.html, docs/ (shotlist, style guide, review log,
 // animation guide), assets/, refs/ and audio/ folders.
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -15,8 +16,7 @@ cpSync(join(ROOT, 'templates', 'film'), dir, { recursive: true });
 for (const d of ['assets', 'refs', 'audio']) mkdirSync(join(dir, d), { recursive: true });
 
 const title = a.title || name.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-const all = ['9:16', '1:1', '16:9'];
-const formats = a.formats ? String(a.formats).split(',') : a.format ? [a.format, ...all.filter((f) => f !== a.format)] : all;
+const formats = a.formats ? String(a.formats).split(',') : [a.format || '9:16'];
 const file = join(dir, 'index.html');
 let html = readFileSync(file, 'utf8')
   .replace(/<title>.*<\/title>/, `<title>${title}</title>`)
