@@ -15,12 +15,18 @@ No After Effects, no timeline, no stock music. Every frame is code.
 <td><b>Showreel</b>: 15 s, 7 shots, 7 techniques.<br><a href="assets/readme/showreel-9x16.mp4">9:16 MP4 with sound</a> · <a href="assets/readme/showreel-16x9.mp4">16:9</a> · <a href="examples/showreel/index.html">source</a></td>
 <td><b>UI morph loop</b>: one container, 11 states, seamless 16 s loop.<br><a href="assets/readme/ui-morph-16x9.mp4">16:9 MP4 with sound</a> · <a href="examples/ui-morph/index.html">source</a></td>
 </tr>
+<tr>
+<td width="34%"><img src="assets/readme/yourbrand.gif" alt="yourbrand.ca product reel, 9:16"></td>
+<td width="66%"><b>Product reel: yourbrand.ca</b> (a fictional brand), 20 s. The one-prompt product brief, end to end:
+kinetic hook, the real UI assembling from Playwright captures, three features driven by a cursor, one number, lockup + CTA.
+Copy it for your own product.<br><a href="assets/readme/yourbrand-9x16.mp4">9:16 MP4 with sound</a> · <a href="assets/readme/yourbrand-16x9.mp4">16:9</a> · <a href="assets/readme/yourbrand-stills.png">stills</a> · <a href="examples/yourbrand">source</a></td>
+</tr>
 </table>
 
 > **Want the 5-minute version?** [`motion-studio/`](motion-studio) is the same idea in about 20 files:
 > `./install.sh`, then ask your agent for a video. Works with Claude Code, Cursor, Codex and Windsurf.
 
-Both films above were made in this repo with the pipeline it ships, including the soundtracks.
+All three films above were made in this repo with the pipeline it ships, including the soundtracks.
 Their critique rounds are in [`examples/showreel/docs/review_log.md`](examples/showreel/docs/review_log.md).
 
 ---
@@ -133,7 +139,7 @@ lib/motion.js            springs, track(), indicator, swapAlpha, seeded noise, b
 lib/stage.js             boot(): formats, fonts, seek(t), layout units, text helpers, live preview
 studio/                  render · audio (music, sfx, beats.py) · check · stills · sheets · film · new
 templates/film/          what `npm run new` copies: starter film + shot list, style guide, review log
-examples/                showreel (L1) and ui-morph (L3), with shot lists and review logs
+examples/                showreel (L1), ui-morph (L3), yourbrand (product reel), with shot lists and review logs
 prompts/                 every prompt from the course, L0 beginner → L4 director's brief
 .claude/skills/          motion-reel · critique-pass · director-brief
 .claude/agents/          motion-critic · sound-designer · shot-animator (for long productions)

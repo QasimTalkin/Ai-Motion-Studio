@@ -1,0 +1,200 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yourbrand.ca · Overview</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<link rel="icon" href="logo.svg">
+<!--
+  yourbrand.ca is a FICTIONAL product: an invoicing app for small Canadian businesses, made up to
+  demo this studio. This page is its "real" product UI: the film never redraws it, it animates
+  Playwright captures of it (see capture.mjs). States: ?modal=1 &sent=1 &remind=1 &paid=1
+-->
+<style>
+  :root {
+    --accent: #FF4A1C; --accent-soft: #FFE9E2; --ink: #121417; --muted: #6B6F76; --faint: #9A9EA5;
+    --line: #E8E4DC; --paper: #FAF8F4; --card: #FFFFFF; --green: #1F8A5B; --green-soft: #E3F4EC;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.45 Inter, system-ui, sans-serif; }
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+
+  .side { background: var(--card); border-right: 1px solid var(--line); padding: 22px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 22px; font-weight: 700; font-size: 19px; letter-spacing: -0.02em; }
+  .brand img { width: 30px; height: 30px; }
+  .brand span { color: var(--accent); }
+  .nav a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 10px; color: var(--muted); text-decoration: none; font-weight: 500; }
+  .nav a.on { background: var(--paper); color: var(--ink); }
+  .nav i { width: 18px; height: 18px; border-radius: 5px; border: 2px solid currentColor; opacity: .7; }
+  .nav a.on i { border-color: var(--accent); background: var(--accent-soft); opacity: 1; }
+  .nav .count { margin-left: auto; font-size: 12px; font-weight: 600; background: var(--accent); color: #fff; border-radius: 99px; padding: 1px 8px; }
+  .ws { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+  .ws b { display: block; font-size: 14px; } .ws small { color: var(--muted); font-size: 12px; }
+  .avatar { width: 34px; height: 34px; border-radius: 10px; background: #1E3A34; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+
+  main { padding: 26px 34px 34px; display: flex; flex-direction: column; gap: 22px; }
+  .top { display: flex; align-items: center; gap: 14px; }
+  .top h1 { margin: 0; font-size: 26px; letter-spacing: -0.025em; }
+  .top p { margin: 2px 0 0; color: var(--muted); }
+  .search { margin-left: auto; width: 260px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--faint); }
+  .btn { border: 0; border-radius: 10px; padding: 11px 18px; font: 600 15px Inter, sans-serif; cursor: pointer; }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+  .kpi small { color: var(--muted); font-weight: 500; }
+  .kpi strong { display: block; font-size: 32px; letter-spacing: -0.03em; margin: 6px 0 4px; }
+  .kpi em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .kpi em.up { color: var(--green); }
+  .spark { display: flex; align-items: flex-end; gap: 4px; height: 26px; margin-top: 10px; }
+  .spark span { flex: 1; background: var(--line); border-radius: 3px; }
+  .spark span.hi { background: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: 1fr 360px; gap: 16px; align-items: start; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
+  .panel header { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .panel header h2 { margin: 0; font-size: 16px; }
+  .panel header a { margin-left: auto; color: var(--muted); font-size: 13px; text-decoration: none; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: 0; }
+  td.id { color: var(--faint); font: 13px "JetBrains Mono", monospace; width: 110px; }
+  td.client b { display: block; font-weight: 600; } td.client small { color: var(--muted); font-size: 12px; }
+  td.amt { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+  td.st { text-align: right; width: 150px; }
+  .pill { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; border-radius: 99px; padding: 4px 11px; font-size: 13px; font-weight: 600; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .pill.paid { background: var(--green-soft); color: var(--green); }
+  .pill.sent { background: #EEF0F3; color: var(--muted); }
+  .pill.late { background: var(--accent-soft); color: var(--accent); }
+
+  .remind .body { padding: 18px 20px 20px; }
+  .toggle-row { display: flex; align-items: center; gap: 12px; }
+  .toggle-row b { display: block; } .toggle-row small { color: var(--muted); font-size: 13px; }
+  .switch { margin-left: auto; width: 50px; height: 30px; border-radius: 99px; background: #D9D5CD; position: relative; flex: none; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .on .switch { background: var(--accent); } .on .switch::after { left: 23px; }
+  .steps { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .steps li { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 12px; }
+  .steps .d { font: 600 12px "JetBrains Mono", monospace; color: var(--muted); width: 48px; }
+  .steps b { font-weight: 600; font-size: 14px; } .steps small { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .steps li.done small { color: var(--green); font-weight: 600; }
+  .off-note { margin: 16px 0 0; padding: 14px; border-radius: 12px; background: var(--paper); color: var(--muted); font-size: 14px; }
+  .remind:not(.on) .steps, .remind.on .off-note { display: none; }
+
+  .scrim { position: fixed; inset: 0; background: rgba(18,20,23,.38); display: none; place-items: center; }
+  .modal .scrim { display: grid; }
+  .dialog { width: 560px; background: var(--card); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,.25); overflow: hidden; }
+  .dialog header { padding: 22px 26px 6px; }
+  .dialog h3 { margin: 0; font-size: 21px; letter-spacing: -0.02em; }
+  .dialog header p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+  .field { margin: 14px 26px 0; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+  .input { border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; font-weight: 500; display: flex; }
+  .input small { margin-left: auto; color: var(--muted); }
+  .lines { margin: 14px 26px 0; border: 1px solid var(--line); border-radius: 12px; }
+  .lines div { display: flex; padding: 11px 14px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .lines div:last-child { border-bottom: 0; }
+  .lines span { margin-left: auto; font-weight: 600; }
+  .lines .tax { color: var(--muted); } .lines .tax span { font-weight: 500; }
+  .lines .total { background: var(--paper); font-weight: 700; font-size: 17px; }
+  .dialog footer { display: flex; align-items: center; gap: 10px; padding: 20px 26px 24px; }
+  .dialog footer .note { color: var(--muted); font-size: 13px; }
+  .dialog footer .btn:first-of-type { margin-left: auto; }
+  .sent-btn { display: none; background: var(--green) !important; }
+  .sent .send-btn { display: none; } .sent .sent-btn { display: inline-block; }
+  .sent-note { display: none; } .sent .sent-note { display: inline; } .sent .draft-note { display: none; }
+</style>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><img src="logo.svg" alt=""><div>yourbrand<span>.ca</span></div></div>
+    <nav class="nav">
+      <a class="on"><i></i>Overview</a>
+      <a><i></i>Invoices<span class="count">4</span></a>
+      <a><i></i>Clients</a>
+      <a><i></i>Reminders</a>
+      <a><i></i>Payments</a>
+      <a><i></i>Settings</a>
+    </nav>
+    <div class="ws"><div class="avatar">MC</div><div><b>Maple &amp; Co. Studio</b><small>Toronto, ON</small></div></div>
+  </aside>
+
+  <main>
+    <div class="top" id="top">
+      <div><h1>Good morning, Sam</h1><p>4 invoices are waiting on clients.</p></div>
+      <div class="search">Search invoices, clients…</div>
+      <button class="btn primary" id="new-btn">+ New invoice</button>
+    </div>
+
+    <section class="kpis">
+      <div class="kpi" id="k1"><small>Outstanding</small><strong>$12,480</strong><em>4 invoices · 1 overdue</em>
+        <div class="spark"><span style="height:40%"></span><span style="height:55%"></span><span style="height:70%"></span><span style="height:50%"></span><span style="height:62%"></span><span style="height:45%"></span><span style="height:38%"></span><span class="hi" style="height:30%"></span></div></div>
+      <div class="kpi" id="k2"><small>Paid in September</small><strong>$38,920</strong><em class="up">▲ 18% vs August</em>
+        <div class="spark"><span style="height:30%"></span><span style="height:38%"></span><span style="height:42%"></span><span style="height:55%"></span><span style="height:60%"></span><span style="height:72%"></span><span style="height:84%"></span><span class="hi" style="height:100%"></span></div></div>
+      <div class="kpi" id="k3"><small>Avg. days to get paid</small><strong>6.2 days</strong><em class="up">▼ from 17.4 before yourbrand</em>
+        <div class="spark"><span style="height:100%"></span><span style="height:92%"></span><span style="height:80%"></span><span style="height:64%"></span><span style="height:52%"></span><span style="height:44%"></span><span style="height:40%"></span><span class="hi" style="height:36%"></span></div></div>
+    </section>
+
+    <section class="grid">
+      <div class="panel" id="table">
+        <header><h2>Recent invoices</h2><a>View all →</a></header>
+        <table>
+          <tr id="row-1042"><td class="id">INV-1042</td><td class="client"><b>Northbeam Coffee</b><small>Due Sep 25</small></td><td class="amt">$2,400.00</td><td class="st"><span class="pill late" id="pill-1042">Overdue 3d</span></td></tr>
+          <tr><td class="id">INV-1041</td><td class="client"><b>Harbour Yoga</b><small>Due Oct 2</small></td><td class="amt">$860.00</td><td class="st"><span class="pill sent">Sent</span></td></tr>
+          <tr><td class="id">INV-1040</td><td class="client"><b>Pinewood Dental</b><small>Paid Sep 24</small></td><td class="amt">$4,150.00</td><td class="st"><span class="pill paid">Paid</span></td></tr>
+          <tr><td class="id">INV-1039</td><td class="client"><b>Lakeside Print Co.</b><small>Paid Sep 22</small></td><td class="amt">$1,275.00</td><td class="st"><span class="pill paid">Paid</span></td></tr>
+          <tr><td class="id">INV-1038</td><td class="client"><b>Fernhill Bakery</b><small>Paid Sep 19</small></td><td class="amt">$540.00</td><td class="st"><span class="pill paid">Paid</span></td></tr>
+        </table>
+      </div>
+
+      <div class="panel remind" id="remind">
+        <header><h2>Reminders</h2><a>Edit schedule</a></header>
+        <div class="body">
+          <div class="toggle-row"><div><b>Auto-reminders</b><small>Polite emails until it's paid</small></div><div class="switch" id="switch"></div></div>
+          <p class="off-note">Reminders are off. You're chasing invoices by hand.</p>
+          <ul class="steps">
+            <li class="done"><span class="d">Day 0</span><b>Invoice sent</b><small>✓ Delivered</small></li>
+            <li><span class="d">Day 3</span><b>Friendly nudge</b><small>Scheduled</small></li>
+            <li><span class="d">Day 7</span><b>Firm follow-up</b><small>Scheduled</small></li>
+            <li><span class="d">Day 14</span><b>Final notice</b><small>Scheduled</small></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim">
+  <div class="dialog" id="dialog">
+    <header><h3>New invoice</h3><p>INV-1042 · Net 14 · CAD</p></header>
+    <div class="field"><label>Bill to</label><div class="input">Northbeam Coffee<small>accounts@northbeam.co</small></div></div>
+    <div class="lines">
+      <div>Brand refresh, phase 2<span>$1,600.00</span></div>
+      <div>Illustration set (6)<span>$523.89</span></div>
+      <div class="tax">HST 13% (ON)<span>$276.11</span></div>
+      <div class="total">Total due<span>$2,400.00</span></div>
+    </div>
+    <footer>
+      <span class="note draft-note">Reminders on · Interac + card</span>
+      <span class="note sent-note">Emailed to accounts@northbeam.co</span>
+      <button class="btn ghost">Save draft</button>
+      <button class="btn primary send-btn" id="send-btn">Send invoice</button>
+      <button class="btn primary sent-btn" id="sent-btn">✓ Sent</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+  // State flags for the capture script. Static page, no animation.
+  const q = new URLSearchParams(location.search);
+  if (q.has('modal')) document.body.classList.add('modal');
+  if (q.has('sent')) document.body.classList.add('sent');
+  if (q.has('remind')) document.getElementById('remind').classList.add('on');
+  if (q.has('paid')) {
+    const p = document.getElementById('pill-1042');
+    p.className = 'pill paid'; p.textContent = 'Paid';
+    document.querySelector('#row-1042 small').textContent = 'Paid today';
+  }
+</script>
+</body>

@@ -1,0 +1,46 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pay INV-1042 · yourbrand.ca</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<link rel="icon" href="logo.svg">
+<!-- The client-facing pay page of the fictional yourbrand.ca. State: ?paid=1 -->
+<style>
+  :root { --accent: #FF4A1C; --ink: #121417; --muted: #6B6F76; --line: #E8E4DC; --paper: #FAF8F4; --green: #1F8A5B; --green-soft: #E3F4EC; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.45 Inter, system-ui, sans-serif; }
+  body { min-height: 100vh; display: grid; place-items: center; padding: 40px; }
+  .card { width: 440px; background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 28px; }
+  .from { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 40px; height: 40px; border-radius: 12px; background: #1E3A34; color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .from b { display: block; } .from small { color: var(--muted); font-size: 13px; }
+  .due { margin: 26px 0 4px; color: var(--muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .amount { font-size: 48px; font-weight: 700; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
+  .meta { color: var(--muted); margin-top: 2px; }
+  .methods { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+  .btn { border: 0; border-radius: 12px; padding: 15px 18px; font: 600 16px Inter, sans-serif; text-align: center; }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.ghost { background: #fff; border: 1px solid var(--line); }
+  .paid-box { display: none; margin-top: 24px; background: var(--green-soft); color: var(--green); border-radius: 14px; padding: 16px 18px; font-weight: 600; }
+  .paid-box small { display: block; font-weight: 500; color: var(--muted); margin-top: 2px; }
+  .paid .methods { display: none; } .paid .paid-box { display: block; }
+  .by { margin-top: 22px; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .by img { width: 18px; height: 18px; } .by b { color: var(--ink); } .by span { color: var(--accent); }
+</style>
+<body>
+  <div class="card" id="paycard">
+    <div class="from"><div class="avatar">MC</div><div><b>Maple &amp; Co. Studio</b><small>Invoice INV-1042 for Northbeam Coffee</small></div></div>
+    <div class="due" id="due">Amount due</div>
+    <div class="amount">$2,400.00</div>
+    <div class="meta">Due Sep 25 · CAD · HST included</div>
+    <div class="methods">
+      <div class="btn primary" id="pay-btn">Pay with Interac e-Transfer</div>
+      <div class="btn ghost">Pay by card</div>
+    </div>
+    <div class="paid-box">✓ Paid in full<small>Sep 28, 9:14 AM · Interac e-Transfer</small></div>
+    <div class="by"><img src="logo.svg" alt=""><div>Invoiced with <b>yourbrand<span>.ca</span></b></div></div>
+  </div>
+  <script>
+    if (new URLSearchParams(location.search).has('paid')) { document.body.classList.add('paid'); document.getElementById('due').textContent = 'Amount paid'; }
+  </script>
+</body>

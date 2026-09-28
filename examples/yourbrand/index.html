@@ -1,0 +1,424 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>yourbrand.ca</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<style>html,body{margin:0;background:#121417}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// A 20-second product reel for yourbrand.ca, a FICTIONAL invoicing app (see docs/shotlist.md).
+// Every UI pixel is a Playwright capture of its real product page in site/ (npm: node
+// examples/yourbrand/site/capture.mjs): the film crops, stacks and animates it, never redraws it.
+// 0 hook · 2.75 dashboard assembles · 6 invoice · 9.25 reminders · 12.25 get paid · 15 metric · 17.25 lockup
+import { frameHold, spring, track, trackN, clamp, range, lerp, noise, beatPulse, swapAlpha, SPRING } from '/lib/motion.js';
+import { boot } from '/lib/stage.js';
+
+const DUR = 20, BPM = 120;
+const b = (n) => (60 / BPM) * n;
+const P = { bg: '#121417', ink: '#121417', paper: '#FAF8F4', dim: '#8C9097', accent: '#FF4A1C', line: '#E8E4DC', white: '#FFFFFF' };
+const TYPE = [260, 34];                                  // type never overshoots
+const at = (from, to, draw) => ({ from, to, draw: (t, S) => draw(t + from, S) });
+
+// Piece sizes and click targets in CSS px, from assets/layout.json (written by site/capture.mjs).
+const L = {
+  sidebar: { w: 248, h: 900 }, topbar: { w: 1124, h: 61, newBtn: [986, 10, 138, 41] },
+  kpi1: { w: 364, h: 174 }, kpi2: { w: 364, h: 174 }, kpi3: { w: 364, h: 174 },
+  table: { w: 748, h: 420, row: [1, 57, 746, 72], pill: [619, 80, 108, 27] },
+  table_paid: { w: 748, h: 420, row: [1, 57, 746, 72], pill: [665, 80, 62, 27] },
+  remind_off: { w: 360, h: 224, toggle: [289, 82, 50, 30] },
+  remind_on: { w: 360, h: 365, toggle: [289, 82, 50, 30], steps: [21, 137, 318, 207] },
+  modal: { w: 560, h: 448, send: [405, 382, 129, 41] }, modal_sent: { w: 560, h: 448 },
+  pay: { w: 440, h: 421, pay: [29, 239, 382, 50] }, pay_paid: { w: 440, h: 382 },
+};
+const IMAGES = Object.fromEntries([...Object.keys(L), 'logo'].map((k) => [k, `assets/${k}.${k === 'logo' ? 'svg' : 'png'}`]));
+
+// ── helpers ─────────────────────────────────────────────────────────────────
+const measure = (S, str, size, weight, face) => { S.g.save(); S.g.letterSpacing = '0px'; S.g.font = S.font(size, weight, face); const w = S.g.measureText(str).width; S.g.restore(); return w; };
+const fit = (S, str, weight, face, maxW, maxSize) => Math.min(maxSize, (100 * maxW) / measure(S, str, 100, weight, face));
+
+// Draw a captured piece (or a crop of it, src in CSS px) at x, y with k film px per CSS px (times S.u).
+function piece(S, name, x, y, k, src, shadow = true) {
+  const { g, u } = S, im = S.img(name);
+  if (!im) return;
+  const [sx, sy, sw, sh] = src || [0, 0, L[name].w, L[name].h];
+  const fx = im.naturalWidth / L[name].w, fy = im.naturalHeight / L[name].h;
+  g.save();
+  g.imageSmoothingQuality = 'high';
+  if (shadow) { g.shadowColor = 'rgba(18,20,23,0.16)'; g.shadowBlur = 44 * u; g.shadowOffsetY = 18 * u; }
+  g.drawImage(im, sx * fx, sy * fy, sw * fx, sh * fy, x, y, sw * k * u, sh * k * u);
+  g.restore();
+}
+
+// Kinetic headline: lines of words, each word rises out of its own slot, 8th notes apart.
+// Words in `accent` are set in the display serif italic, accent colored.
+function headline(S, t, lines, x, y, size, t0, o = {}) {
+  const { g, u } = S;
+  const { color = P.ink, accent = [], accentColor = P.accent, step = b(0.5), lh = 1.02, align = 'left' } = o;
+  let i = 0;
+  lines.forEach((words, li) => {
+    const faces = words.map((w) => (accent.includes(w) ? ['italic 400', 'display'] : [800, 'ui']));
+    const sp = measure(S, ' ', size, 800, 'ui');
+    const widths = words.map((w, j) => measure(S, w, size, ...faces[j]));
+    const total = widths.reduce((a, c) => a + c, 0) + sp * (words.length - 1);
+    let wx = align === 'center' ? x - total / 2 : x;
+    const wy = y + li * size * lh * u;
+    words.forEach((w, j) => {
+      const s = spring(t - t0 - i * step, TYPE);
+      g.save(); g.beginPath(); g.rect(wx - 20 * u, wy - size * u * 0.95, widths[j] + 40 * u, size * u * 1.2); g.clip();
+      S.text(w, wx, wy + (1 - s) * size * u * 1.1, { size, weight: faces[j][0], face: faces[j][1], color: accent.includes(w) ? accentColor : color, tracking: faces[j][1] === 'ui' ? -0.035 : -0.01 });
+      g.restore();
+      wx += widths[j] + sp; i++;
+    });
+  });
+}
+
+function cursor(S, x, y, press = 0) {
+  const { g, u } = S, k = (1.7 - 0.2 * press) * u;
+  g.save(); g.translate(x, y); g.scale(k, k);
+  g.shadowColor = 'rgba(0,0,0,0.25)'; g.shadowBlur = 10; g.shadowOffsetY = 4;
+  g.beginPath(); [[0, 0], [0, 34], [9, 26], [15, 40], [21, 37], [15, 24], [26, 24]].forEach(([px, py], i) => (i ? g.lineTo(px, py) : g.moveTo(px, py)));
+  g.closePath(); g.fillStyle = P.ink; g.fill(); g.shadowColor = 'transparent'; g.strokeStyle = P.white; g.lineWidth = 2.5; g.stroke();
+  g.restore();
+}
+const press = (t, at) => spring(t - at + 0.07, SPRING.snappy) - spring(t - at - 0.07, SPRING.snappy);
+function ripple(S, x, y, t, at) {                        // click feedback: one ring, gone in 0.4 s
+  const p = range(t, at, at + 0.4);
+  if (p <= 0 || p >= 1) return;
+  const { g, u } = S;
+  g.save(); g.globalAlpha = 1 - p; g.strokeStyle = P.accent; g.lineWidth = 5 * u;
+  g.beginPath(); g.arc(x, y, (14 + 60 * spring(t - at, SPRING.snappy)) * u, 0, Math.PI * 2); g.stroke(); g.restore();
+}
+const center = (x, y, k, r, u) => [x + (r[0] + r[2] / 2) * k * u, y + (r[1] + r[3] / 2) * k * u];
+
+// ── 1 · hook ────────────────────────────────────────────────────────────────
+function hookLayout(S) {
+  const { W, H } = S;
+  const lines = S.orientation === 'portrait' ? [['Clients'], ['pay'], ['late.'], ['Every'], ['time.']] : [['Clients', 'pay', 'late.'], ['Every', 'time.']];
+  const size = S.orientation === 'portrait' ? fit(S, 'Clients', 800, 'ui', W * 0.84, 270) : fit(S, 'Clients pay late.', 800, 'ui', W * 0.86, 260);
+  const lh = 0.98, x = W * 0.08;
+  const y = H / 2 - (lines.length * size * lh * S.u) / 2 + size * S.u * 0.78;
+  // the period of "late." is where the wipe comes from
+  const li = lines.findIndex((l) => l.includes('late.'));
+  const before = lines[li].slice(0, -1).map((w) => measure(S, w + ' ', size, 800, 'ui')).reduce((a, c) => a + c, 0);
+  const dotX = x + before + measure(S, 'late', size, 'italic 400', 'display') + measure(S, '.', size, 'italic 400', 'display') * 0.35;
+  return { lines, size, lh, x, y, dot: [dotX, y + li * size * lh * S.u - size * S.u * 0.07] };
+}
+
+function hook(t, S) {
+  const { g, W, H } = S;
+  const H0 = hookLayout(S);
+  const push = 1 + 0.06 * spring(t, SPRING.heavy);
+  g.translate(H0.dot[0], H0.dot[1]); g.scale(push, push); g.translate(-H0.dot[0], -H0.dot[1]);
+  const fade = spring(t - b(4.6), SPRING.default);         // everything but "late." steps back
+  headline(S, t, H0.lines, H0.x, H0.y, H0.size, 0, { color: lerpHex(P.paper, '#4A4E55', fade), accent: ['late.'], step: b(1), lh: H0.lh });
+}
+function lerpHex(a, c, p) {
+  const A = parseInt(a.slice(1), 16), C = parseInt(c.slice(1), 16);
+  return '#' + [16, 8, 0].map((s) => Math.round(lerp((A >> s) & 255, (C >> s) & 255, clamp(p))).toString(16).padStart(2, '0')).join('');
+}
+
+// ── 2 + 3 · the dashboard assembles, then: invoice in 30 seconds ────────────
+function dashLayout(S) {
+  const { W, H, u } = S;
+  if (S.orientation !== 'portrait') {
+    const k = (H / u) / 900 * 0.96, ox = (W - 1440 * k * u) / 2, oy = (H - 900 * k * u) / 2;
+    const p = (x, y) => [ox + x * k * u, oy + y * k * u];
+    return {
+      k, pieces: [
+        { n: 'sidebar', at: p(0, 0), t: b(6), from: [-400, 0] },
+        { n: 'topbar', at: p(282, 26), t: b(6.25), from: [0, -300] },
+        { n: 'kpi1', at: p(282, 109), t: b(6.5), pop: 1 },
+        { n: 'kpi2', at: p(662, 109), t: b(6.75), pop: 1 },
+        { n: 'kpi3', at: p(1042, 109), t: b(7), pop: 1 },
+        { n: 'table', at: p(282, 305), t: b(7.5), from: [0, 900] },
+        { n: 'remind_off', at: p(1046, 305), t: b(8), from: [700, 0] },
+      ],
+      btn: { n: 'topbar', at: p(282, 26), r: L.topbar.newBtn, k },
+    };
+  }
+  const k = 1.3, col = 960, x0 = (W / u - col) / 2 * u;
+  const brandK = 1.55, stackH = 64 * brandK + 50 + 174 * k + 16 + 224 * k + 16 + 420 * 1.283;
+  let y = (H / u - stackH - 300) / 2 * u;
+  const btnK = 1.5, btnR = L.topbar.newBtn;
+  const bdx = x0 + col * u - (btnR[2] + 8) * btnK * u, bdy = y + 32 * brandK * u - (btnR[3] + 8) / 2 * btnK * u;
+  const pieces = [
+    { n: 'sidebar', at: [x0, y], k: brandK, src: [16, 18, 240, 64], t: b(6), from: [-600, 0], flat: 1 },
+    { n: 'topbar', at: [bdx, bdy], k: btnK, src: [btnR[0] - 4, btnR[1] - 4, btnR[2] + 8, btnR[3] + 8], t: b(6.25), from: [600, 0], flat: 1 },
+  ];
+  y += (64 * brandK + 50) * u;
+  const half = (col - 16) / 2 / 364;
+  pieces.push({ n: 'kpi1', at: [x0, y], k: half, t: b(6.5), pop: 1 }, { n: 'kpi2', at: [x0 + (364 * half + 16) * u, y], k: half, t: b(6.75), pop: 1 });
+  y += (174 * half + 16) * u;
+  pieces.push({ n: 'kpi3', at: [x0, y], k: half, t: b(7), pop: 1 }, { n: 'remind_off', at: [x0 + (364 * half + 16) * u, y], k: 364 * half / 360, t: b(7.25), pop: 1 });
+  y += (224 * (364 * half / 360) + 16) * u;
+  pieces.push({ n: 'table', at: [x0, y], k: col / 748, t: b(7.75), from: [0, 1100] });
+  const capY = y + (420 * col / 748 + 170) * u;
+  return { k, pieces, capY, btn: { n: 'topbar', at: [bdx - (btnR[0] - 4) * btnK * u, bdy - (btnR[1] - 4) * btnK * u], r: btnR, k: btnK } };
+}
+
+function dash(t, S) {
+  const { g, W, H, u } = S;
+  const HL = hookLayout(S);
+  const R = Math.hypot(W, H) * 1.05 * spring(t - b(5.5), [140, 24]);
+  const exit = spring(t - b(18.5), [170, 26]);
+  g.translate(-W * exit, 0);
+  g.save();
+  g.beginPath(); g.arc(HL.dot[0], HL.dot[1], R, 0, Math.PI * 2); g.clip();
+  g.fillStyle = P.paper; g.fillRect(0, 0, W, H);
+
+  const D = dashLayout(S);
+  const btnC = center(D.btn.at[0], D.btn.at[1], D.btn.k, D.btn.r, u);
+  const CLICK1 = b(12.5), CLICK2 = b(15.5);
+  // camera: slow push while it assembles, then lean toward the button before the click
+  const push = 1 + 0.03 * spring(t - b(6), SPRING.heavy) + 0.05 * spring(t - b(11), SPRING.heavy);
+  const focus = [lerp(W / 2, btnC[0], 0.5 * spring(t - b(11), SPRING.heavy)), lerp(H / 2, btnC[1], 0.5 * spring(t - b(11), SPRING.heavy))];
+  g.save();
+  g.translate(focus[0], focus[1]); g.scale(push, push); g.translate(-focus[0], -focus[1]);
+  for (const p of D.pieces) {
+    const s = spring(t - p.t, p.pop ? [260, 24] : [170, 26]);
+    if (s <= 0) continue;
+    const k = p.k ?? D.k;
+    const src = p.src ? [...p.src] : undefined;
+    g.save();
+    let x = p.at[0], y = p.at[1];
+    if (p.from) { x += p.from[0] * (1 - s) * u; y += p.from[1] * (1 - s) * u; }
+    if (p.pop) {
+      const cw = L[p.n].w * k * u / 2, ch = L[p.n].h * k * u / 2;
+      g.translate(x + cw, y + ch); g.scale(s, s); g.translate(-x - cw, -y - ch);
+    }
+    if (p.n === 'topbar' && src) {                         // the button presses on the click
+      const pr = press(t, CLICK1), cx = btnC[0], cy = btnC[1];
+      g.translate(cx, cy); g.scale(1 - 0.06 * pr, 1 - 0.06 * pr); g.translate(-cx, -cy);
+    }
+    piece(S, p.n, x, y, k, src, !p.flat);
+    g.restore();
+  }
+  g.restore();
+
+  g.save(); g.globalAlpha = swapAlpha(t, -1, b(12.6));
+  if (D.capY) headline(S, t, [['Every', 'invoice,'], ['one', 'calm', 'screen.']], W / 2, D.capY, 96, b(8.5), { accent: ['calm'], align: 'center' });
+  g.restore();
+  // dim + dialog springs out of the button
+  const dim = spring(t - b(12.6), SPRING.default);
+  if (dim > 0) { g.fillStyle = `rgba(18,20,23,${0.86 * dim})`; g.fillRect(0, 0, W, H); }
+  const mk = S.pick({ portrait: 1.7, landscape: 1.45 });
+  const mc = S.pick({ portrait: [W / 2, H * 0.6], landscape: [W * 0.69, H / 2] });
+  const open = spring(t - b(12.6), [200, 24]);
+  const mcx = lerp(btnC[0], mc[0], open), mcy = lerp(btnC[1], mc[1], open);
+  const mx = mc[0] - L.modal.w * mk * u / 2, my = mc[1] - L.modal.h * mk * u / 2;
+  if (open > 0.001) {
+    g.save(); g.translate(mcx, mcy); g.scale(open * (1 - 0.02 * press(t, CLICK2)), open * (1 - 0.02 * press(t, CLICK2))); g.translate(-mc[0], -mc[1]);
+    piece(S, t < CLICK2 + 0.06 ? 'modal' : 'modal_sent', mx, my, mk);
+    g.restore();
+  }
+  // caption
+  const hs = S.pick({ portrait: 128, landscape: 112 });
+  const hx = S.pick({ portrait: W / 2, landscape: W * 0.07 });
+  const hy = S.pick({ portrait: my - 250 * u, landscape: H / 2 - 30 * u });
+  headline(S, t, [['Invoice', 'in'], ['30', 'seconds.']], hx, hy, hs, b(13), { color: P.paper, accent: ['30', 'seconds.'], align: S.pick({ portrait: 'center', landscape: 'left' }) });
+  S.text('Line items, HST and a pay link, filled in for you.', hx, hy + hs * u * 1.02 + 70 * u + (1 - spring(t - b(14.5), TYPE)) * 20 * u,
+    { size: S.pick({ portrait: 36, landscape: 32 }), weight: 500, color: P.dim, align: S.pick({ portrait: 'center', landscape: 'left' }), alpha: swapAlpha(t, b(14.5)) });
+
+  // cursor: in, click + New invoice, then Send
+  const sendC = center(mx, my, mk, L.modal.send, u);
+  const cur = trackN(t, [[0, [W + 80 * u, H * 0.9]], [b(10), [btnC[0] + 10 * u, btnC[1] + 6 * u]], [b(13.5), [sendC[0] + 6 * u, sendC[1] + 4 * u]], [b(16.5), [W * 0.9, H * 0.95]]], 120, 22);
+  ripple(S, btnC[0], btnC[1], t, CLICK1);
+  ripple(S, sendC[0], sendC[1], t, CLICK2);
+  if (t > b(9.5)) cursor(S, cur[0], cur[1], press(t, CLICK1) + press(t, CLICK2));
+  g.restore();
+}
+
+// ── 4 · reminders that chase for you ────────────────────────────────────────
+function remind(t, S) {
+  const { g, W, H, u } = S;
+  const enter = 1 - spring(t - b(18.5), [170, 26]), exit = spring(t - b(24.5), [170, 26]);
+  g.translate(W * enter, -H * exit);
+  g.fillStyle = P.ink; g.fillRect(0, 0, W, H);
+
+  const k = S.pick({ portrait: 2.4, landscape: 2.15 });
+  const cw = 360 * k * u;
+  const x = S.pick({ portrait: (W - cw) / 2, landscape: W * 0.93 - cw });
+  const y = S.pick({ portrait: H * 0.36, landscape: (H - 365 * k * u) / 2 });
+  const CLICK = b(20.5);
+  const on = t >= CLICK + 0.05;
+  const tg = center(x, y, k, L.remind_on.toggle, u);
+  if (!on) piece(S, 'remind_off', x, y, k);
+  else {
+    const hgt = track(t, [[0, 224], [CLICK, 365]], 200, 26);
+    g.save();                                             // the card grows; shadow on the white body
+    g.shadowColor = 'rgba(0,0,0,0.3)'; g.shadowBlur = 44 * u; g.shadowOffsetY = 18 * u;
+    g.fillStyle = P.white; S.rrect(x, y, cw, hgt * k * u, 16 * k * u); g.fill(); g.restore();
+    g.save(); S.rrect(x, y, cw, hgt * k * u, 16 * k * u); g.clip();
+    piece(S, 'remind_on', x, y, k, [0, 0, 360, 137], false);
+    const [sx, sy, sw, sh] = L.remind_on.steps, rh = (sh - 30) / 4;
+    for (let i = 0; i < 4; i++) {
+      const s = spring(t - b(21) - i * b(0.5), [220, 26]);
+      if (s <= 0) continue;
+      const ry = sy + i * (rh + 10);
+      piece(S, 'remind_on', x + (sx + (1 - s) * 360) * k * u, y + ry * k * u, k, [sx - 1, ry - 1, sw + 2, rh + 2], false);
+    }
+    g.restore();
+  }
+
+  const hs = S.pick({ portrait: 118, landscape: 100 });
+  const hx = S.pick({ portrait: W / 2, landscape: W * 0.07 });
+  const hy = S.pick({ portrait: y - 300 * u, landscape: H / 2 - 30 * u });
+  headline(S, t, [['Reminders', 'that'], ['chase', 'for', 'you.']], hx, hy, hs, b(19), { color: P.paper, accent: ['chase'], align: S.pick({ portrait: 'center', landscape: 'left' }) });
+  S.text('Day 3, 7 and 14. Polite, then firm. Stops when it\'s paid.', hx, hy + hs * u * 1.02 + 70 * u + (1 - spring(t - b(22), TYPE)) * 20 * u,
+    { size: S.pick({ portrait: 34, landscape: 32 }), weight: 500, color: P.dim, align: S.pick({ portrait: 'center', landscape: 'left' }), alpha: swapAlpha(t, b(22)) });
+
+  const cur = trackN(t, [[0, [W * 0.95, H * 1.05]], [b(19.2), [tg[0] + 4 * u, tg[1] + 4 * u]], [b(21.5), [W * 0.97, H * 1.1]]], 120, 22);
+  ripple(S, tg[0], tg[1], t, CLICK);
+  cursor(S, cur[0], cur[1], press(t, CLICK));
+}
+
+// ── 5 · paid in one tap ─────────────────────────────────────────────────────
+function payLayout(S) {
+  const { W, H, u } = S;
+  const k = S.pick({ portrait: 1.95, landscape: 1.72 });
+  const cw = 440 * k * u;
+  const x = S.pick({ portrait: (W - cw) / 2, landscape: W * 0.93 - cw });
+  const y = S.pick({ portrait: H * 0.29, landscape: (H - 421 * k * u) / 2 });
+  const rk = S.pick({ portrait: 1000 / ROW[2], landscape: 1.34 });
+  const rx = S.pick({ portrait: (W - ROW[2] * rk * u) / 2, landscape: W * 0.07 });
+  const ry = S.pick({ portrait: y + 421 * k * u + 60 * u, landscape: H * 0.6 });
+  return { k, x, y, rk, rx, ry };
+}
+const ROW = [118, 57, 612, 72];                          // the invoice row, cropped to client · amount · status
+function pay(t, S) {
+  const { g, W, H, u } = S;
+  const enter = 1 - spring(t - b(24.5), [170, 26]);
+  g.translate(0, H * enter);
+  g.fillStyle = P.paper; g.fillRect(0, 0, W, H);
+  const { k, x, y, rk, rx, ry } = payLayout(S);
+  const CLICK = b(26), FLIP = b(28.5);
+  const pc = center(x, y, k, L.pay.pay, u);
+  g.save(); g.translate(pc[0], pc[1]); const pr = 1 - 0.015 * press(t, CLICK); g.scale(pr, pr); g.translate(-pc[0], -pc[1]);
+  piece(S, t < CLICK + 0.06 ? 'pay' : 'pay_paid', x, y, k);
+  g.restore();
+
+  // the invoice row on the dashboard flips to Paid
+  const rs = spring(t - b(27), [200, 26]);
+  if (rs > 0) {
+    g.save(); g.beginPath(); g.rect(0, ry - 30 * u, W, (ROW[3] * rk + 90) * u); g.clip();
+    g.translate(0, (1 - rs) * (ROW[3] * rk + 60) * u);
+    g.save(); g.shadowColor = 'rgba(18,20,23,0.18)'; g.shadowBlur = 40 * u; g.shadowOffsetY = 14 * u;
+    g.fillStyle = P.white; S.rrect(rx, ry, ROW[2] * rk * u, ROW[3] * rk * u, 16 * u); g.fill(); g.restore();
+    piece(S, t < FLIP ? 'table' : 'table_paid', rx, ry, rk, [ROW[0], ROW[1], ROW[2], ROW[3] - 1], false);
+    g.restore();
+  }
+  const pillR = t < FLIP ? L.table.pill : L.table_paid.pill;
+  const pl = [rx + (pillR[0] - ROW[0] + pillR[2] / 2) * rk * u, ry + (pillR[1] - ROW[1] + pillR[3] / 2) * rk * u];
+  ripple(S, pl[0], pl[1], t, FLIP);
+
+  const hs = S.pick({ portrait: 128, landscape: 136 });
+  const hx = S.pick({ portrait: W / 2, landscape: W * 0.07 });
+  const hy = S.pick({ portrait: y - 110 * u, landscape: H * 0.3 });
+  headline(S, t, S.pick({ portrait: [['Paid', 'in', 'one', 'tap.']], landscape: [['Paid', 'in'], ['one', 'tap.']] }), hx, hy, hs, b(25), { color: P.ink, accent: ['one', 'tap.'], align: S.pick({ portrait: 'center', landscape: 'left' }) });
+
+  const cur = trackN(t, [[0, [W * 0.9, H * 1.05]], [b(25), [pc[0] + 60 * u, pc[1] + 8 * u]], [b(27), [W * 1.1, H * 0.75]]], 120, 22);
+  ripple(S, pc[0] + 60 * u, pc[1], t, CLICK);
+  cursor(S, cur[0], cur[1], press(t, CLICK));
+  return pl;
+}
+
+// ── 6 · the number ──────────────────────────────────────────────────────────
+function metric(t, S) {
+  const { g, W, H, u } = S;
+  const { rx, ry, rk } = payLayout(S);
+  const pillR = L.table_paid.pill;
+  const o = [rx + (pillR[0] - ROW[0] + pillR[2] / 2) * rk * u, ry + (pillR[1] - ROW[1] + pillR[3] / 2) * rk * u];
+  const R = Math.hypot(W, H) * 1.1 * spring(t - b(30), [140, 24]);
+  g.beginPath(); g.arc(o[0], o[1], R, 0, Math.PI * 2); g.clip();
+  g.fillStyle = P.accent; g.fillRect(0, 0, W, H);
+
+  const pulse = beatPulse(t, BPM, { decay: 8, every: 2 });
+  const x = S.pick({ portrait: W * 0.08, landscape: W * 0.1 });
+  const y = S.pick({ portrait: H * 0.55, landscape: H * 0.58 });
+  const size = fit(S, '17.4', 800, 'ui', S.pick({ portrait: W * 0.58, landscape: W * 0.4 }), 400);
+  const out = swapAlpha(t, -1, b(34.5));
+  S.text('Average time to get paid', x + 8 * u, y - size * u * 0.86 + (1 - spring(t - b(30.5), TYPE)) * 30 * u, { size: S.pick({ portrait: 50, landscape: 46 }), weight: 600, color: P.ink, alpha: Math.min(out, swapAlpha(t, b(30.5))) });
+  const v = lerp(17.4, 6.2, spring(frameHold(t) - b(31), [60, 15]));
+  const num = v.toFixed(1);
+  g.save(); g.globalAlpha = out;
+  const nw = S.text(num, x, y, { size: size * (1 + 0.012 * pulse), weight: 800, color: P.paper, tracking: -0.05, alpha: spring(t - b(30.6), SPRING.snappy) > 0.02 ? 1 : 0 });
+  const numMax = measure(S, '17.4', size, 800, 'ui') * 0.93;
+  S.text('days', x + Math.max(nw, numMax) + 30 * u, y, { size: size * 0.42, weight: 'italic 400', face: 'display', color: P.ink, alpha: swapAlpha(t, b(31)) });
+  // was 17.4, struck through
+  const wy = y + 120 * u;
+  const ws = spring(t - b(32.5), TYPE);
+  const ww = S.text('was 17.4 days before', x + 8 * u, wy + (1 - ws) * 24 * u, { size: S.pick({ portrait: 50, landscape: 46 }), weight: 500, color: P.ink, alpha: swapAlpha(t, b(32.5)) });
+  g.fillStyle = P.ink; g.fillRect(x + 8 * u + measure(S, 'was ', S.pick({ portrait: 50, landscape: 46 }), 500, 'ui'), wy - 16 * u, measure(S, '17.4 days', S.pick({ portrait: 50, landscape: 46 }), 500, 'ui') * spring(t - b(33), SPRING.snappy), 5 * u);
+  const fs = spring(t - b(33.5), [260, 22]);
+  if (fs > 0.01) {
+    const bx = x + 8 * u, by = wy + 70 * u, bw = 330 * u * fs;
+    g.fillStyle = P.ink; S.rrect(bx, by, bw, 76 * u, 38 * u); g.fill();
+    S.text('2.8× faster', bx + 34 * u, by + 51 * u, { size: 38, weight: 700, color: P.paper, alpha: swapAlpha(t, b(33.5)) });
+  }
+  g.restore();
+}
+
+// ── 7 · lockup: the accent frame becomes the logo ───────────────────────────
+function lockup(t, S) {
+  const { g, W, H, u } = S;
+  const T0 = b(34.5), HIT = b(35);
+  const markS = S.pick({ portrait: 220, landscape: 190 });
+  const word = S.pick({ portrait: 140, landscape: 128 });
+  const groupH = (markS + 60 + word + 190 + 90) * u;
+  const cx = W / 2 + noise(t * 0.5, 4) * 3 * u;
+  const markY = H / 2 - groupH / 2 + markS * u / 2;
+  const K = [150, 22];
+  const w = track(t, [[0, W / u], [T0, markS]], ...K) * u, h = track(t, [[0, H / u], [T0, markS]], ...K) * u;
+  const r = track(t, [[0, 0], [T0, markS * 0.25]], ...K) * u;
+  const my = lerp(H / 2, markY, spring(t - T0, K));
+  g.fillStyle = P.accent; S.rrect(cx - w / 2, my - h / 2, w, h, r); g.fill();
+  const logo = S.img('logo'), la = swapAlpha(t, HIT);
+  if (logo && la > 0) {
+    const ls = markS * u * (0.9 + 0.1 * spring(t - HIT, SPRING.snappy));
+    g.save(); g.globalAlpha = la; g.drawImage(logo, cx - ls / 2, my - ls / 2, ls, ls); g.restore();
+  }
+  // wordmark: yourbrand + accent .ca, out of a slot
+  const wy = markY + markS * u / 2 + (60 + word * 0.78) * u;
+  const w1 = measure(S, 'yourbrand', word, 700, 'ui'), w2 = measure(S, '.ca', word, 700, 'ui');
+  g.save(); g.beginPath(); g.rect(0, wy - word * u, W, word * u * 1.28); g.clip();
+  const rise = (1 - spring(t - b(36), TYPE)) * word * u * 1.1;
+  S.text('yourbrand', cx - (w1 + w2) / 2, wy + rise, { size: word, weight: 700, color: P.paper, tracking: -0.04 });
+  S.text('.ca', cx - (w1 + w2) / 2 + w1 - word * 0.04 * 9 * u, wy + rise, { size: word, weight: 700, color: P.accent, tracking: -0.04 });
+  g.restore();
+  const ty = wy + 100 * u;
+  S.text('Invoices that chase themselves.', cx, ty + (1 - spring(t - b(37), TYPE)) * 24 * u, { size: S.pick({ portrait: 58, landscape: 52 }), weight: 'italic 400', face: 'display', color: P.paper, align: 'center', alpha: swapAlpha(t, b(37)) });
+  const ps = spring(t - b(38), SPRING.snappy), pw = S.pick({ portrait: 640, landscape: 600 }) * u, ph = 96 * u, py = ty + 60 * u;
+  if (ps > 0.01) {
+    g.fillStyle = P.accent; S.rrect(cx - pw * ps / 2, py, pw * ps, ph, ph / 2); g.fill();
+    S.text('Try it free at yourbrand.ca  →', cx, py + ph / 2 + 15 * u, { size: 40, weight: 700, color: P.white, align: 'center', alpha: swapAlpha(t, b(38)) });
+  }
+}
+
+const S = boot({
+  title: 'yourbrand.ca · product reel', dur: DUR, bpm: BPM, formats: ['9:16', '16:9'], palette: P, images: IMAGES,
+  music: { style: 'pulse', key: 'D', seed: 7, breaks: [8], end: b(35) },
+  cues: [
+    ...[0, 1, 2, 3, 4].map((n) => ({ t: b(n), type: 'thump', gain: n === 2 ? 1 : 0.6 })), { t: b(2), type: 'glitch', gain: 0.5 },
+    { t: b(5.5), type: 'whoosh' }, { t: b(6), type: 'swipe' }, { t: b(6.25), type: 'swipe', gain: 0.6 },
+    ...[6.5, 6.75, 7, 7.25].map((n) => ({ t: b(n), type: 'pop', gain: 0.6 })), { t: b(7.5), type: 'whoosh', gain: 0.7 }, { t: b(8), type: 'swipe', gain: 0.6 },
+    { t: b(12.5), type: 'click' }, { t: b(12.6), type: 'whoosh', gain: 0.7 },
+    ...[13, 13.5, 14, 14.5].map((n) => ({ t: b(n), type: 'tick', gain: 0.5 })),
+    { t: b(15.5), type: 'click' }, { t: b(15.6), type: 'chime' },
+    { t: b(18.5), type: 'whoosh' }, { t: b(20.5), type: 'click' }, { t: b(20.6), type: 'swipe', gain: 0.6 },
+    ...[21, 21.5, 22, 22.5].map((n) => ({ t: b(n), type: 'pop', gain: 0.55 })),
+    { t: b(24.5), type: 'whoosh' }, { t: b(26), type: 'click' }, { t: b(26.1), type: 'chime' },
+    { t: b(27), type: 'swipe', gain: 0.6 }, { t: b(28.5), type: 'pop' },
+    { t: b(30), type: 'whoosh' }, ...Array.from({ length: 16 }, (_, i) => ({ t: b(31) + i * 0.06, type: 'tick', gain: 0.4 })),
+    { t: b(33), type: 'click' }, { t: b(33.5), type: 'pop', gain: 0.6 },
+    { t: b(35), type: 'riser', gain: 0.8 }, { t: b(35), type: 'impact' },
+    { t: b(36), type: 'thump', gain: 0.4 }, { t: b(37), type: 'pop', gain: 0.5 }, { t: b(38), type: 'click' },
+  ],
+  scenes: [
+    at(0, b(6.4), hook),
+    at(b(5.5), b(19.6), dash),
+    at(b(18.5), b(25.6), remind),
+    at(b(24.5), b(31.5), pay),
+    at(b(30), b(35.2), metric),
+    at(b(34.5), DUR, lockup),
+  ],
+});
+</script>
