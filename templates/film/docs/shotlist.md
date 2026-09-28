@@ -4,7 +4,7 @@
 > Hook in the first 2 seconds. Show this to the user, then build.
 
 **Logline:** <what the viewer should feel at the end, in one line>
-**Duration / BPM / formats:** 12 s · 120 BPM (1 beat = 0.5 s, 1 bar = 2 s) · 9:16, 1:1, 16:9
+**Duration / BPM / formats:** 12 s · 120 BPM (1 beat = 0.5 s, 1 bar = 2 s) · 9:16
 **Music:** synthesized `pulse` in A minor | supplied `audio/track.wav`
 
 | # | Beats (time) | Shot | Technique | Camera | On-screen text | SFX |

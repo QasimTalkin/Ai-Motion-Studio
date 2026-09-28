@@ -15,7 +15,7 @@ import { boot } from '/lib/stage.js';
 const TITLE = 'Motion';
 const DUR = 12;
 const BPM = 120;
-const FORMATS = ['9:16', '1:1', '16:9'];
+const FORMATS = ['9:16'];            // add '1:1' / '16:9' only when asked for
 
 const P = { bg: '#141413', ink: '#F0EEE6', dim: '#8A887F', accent: '#D97757' };
 const b = (n) => (60 / BPM) * n;      // time of beat n (the stage exposes the same as S.beat)
