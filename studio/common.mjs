@@ -81,8 +81,10 @@ export function serve(port = 0) {
   }));
 }
 
-export const filmUrl = (base, dir, query = {}) =>
-  `${base}/${relative(ROOT, dir).split(sep).join('/')}/index.html?` + new URLSearchParams(query);
+export const filmUrl = (base, dir, query = {}) => {
+  const q = new URLSearchParams(query).toString();
+  return `${base}/${relative(ROOT, dir).split(sep).join('/')}/index.html${q ? '?' + q : ''}`;
+};
 
 export async function launch() {
   const { chromium } = await import('playwright');
