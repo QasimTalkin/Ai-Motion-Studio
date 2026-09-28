@@ -1,0 +1,46 @@
+<!--
+  L3 · Write the state list, not the vibe.
+  The most-bookmarked prompt pattern of the trend (@twoclipping's UI morph, @verbove's MakerMap):
+  inputs to ask for, direction, a beat-by-beat state list, build rules, and gotchas.
+  One shape, never cut: a single element morphs size, radius and color from state to state,
+  a cursor drives each change with real clicks, and the last frame equals the first so it loops.
+  See examples/ui-morph for this spec built in this repo.
+-->
+<inputs>
+Ask me for: my product + URL, 8 to 12 UI states that tell its story, the real data shown in
+each state, brand colors + fonts + one accent, a royalty-free track near 120 BPM (or "synthesize"), formats.
+</inputs>
+
+<direction>
+Product-film UI motion. One container never cuts: every state is the same element changing
+size, radius and fill while its content swaps behind a short blur. A cursor drives every change.
+Warm neutral canvas, one accent. Springs with at most a tiny overshoot.
+Banned: bouncy easing, glows, gradients on UI chrome, particle bursts, dead time.
+</direction>
+
+<structure>
+120 BPM, 8 bars, something happens on every beat.
+logo → CTA button → email field (typed) → loader → success check → dashboard card
+→ chart draws itself → tooltip on hover → ⌘K palette → toast → logo.
+</structure>
+
+<build>
+1. npm run new [name] -- --dur 16 --bpm 120. One HTML file, one canvas, window.seek(t) via boot().
+   No CSS transitions, no timers, no carried state.
+2. Closed-form springs from /lib/motion.js. A value with many targets = track(): one spring per change.
+3. Text inside a morphing container enters after the morph starts, leaves before the next one (swapAlpha).
+4. Tab indicators: leading and trailing edges on different springs so they stretch (indicator()).
+5. Beat grid from the track (python studio/beats.py) or S.beat(n) for a synthesized score.
+   Start on a downbeat. UI sounds (click, pop, type, chime) on measured peaks.
+6. Render with npm run film: headless Chrome at 60 fps, 4 subframes per frame, blended for motion blur.
+7. loop: true in boot(); wrap time with loopT(t, DUR).
+</build>
+
+<gotchas>
+Never use will-change on anything the camera scales (blurry text).
+The last frame must equal the first, cursor position and velocity included (npm run check verifies the seam).
+</gotchas>
+
+<start>
+Ask for the inputs, then show me the state list on the beat grid before writing code.
+</start>
