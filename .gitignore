@@ -1,0 +1,11 @@
+node_modules/
+.env
+.DS_Store
+__pycache__/
+*.pyc
+
+# Render output lives next to each film; only curated README assets are committed.
+**/out/
+films/*
+!films/.gitkeep
+!films/README.md

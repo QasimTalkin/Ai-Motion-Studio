@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run doctor)",
+      "Bash(npm run new:*)",
+      "Bash(npm run check:*)",
+      "Bash(npm run stills:*)",
+      "Bash(npm run render:*)",
+      "Bash(npm run audio:*)",
+      "Bash(npm run sheets:*)",
+      "Bash(npm run film:*)",
+      "Bash(npm run demo)",
+      "Bash(node studio/:*)",
+      "Bash(python studio/beats.py:*)",
+      "Bash(python3 studio/beats.py:*)"
+    ]
+  }
+}

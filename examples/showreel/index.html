@@ -1,0 +1,313 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>AI Motion Studio Showreel</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<style>html,body{margin:0;background:#141413}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// The demo film: a 15-second showreel, every shot a different technique, all on a 120 BPM grid.
+// 0.0 hook: kinetic type from a slot · 1.75 circle wipe · 2.0 one shape, four states (track)
+// 4.0 type stack + stretching indicator · 5.9 UI: cursor, press, morph to progress, check
+// 8.0 data: counter + chart · 10.0 depth: dot sphere → torus · 12.5 lockup (final hit)
+import { frameHold, spring, track, trackN, clamp, range, lerp, hash, noise, beatPulse, swapAlpha, indicator, mixColor, SPRING } from '/lib/motion.js';
+import { boot } from '/lib/stage.js';
+
+const DUR = 15, BPM = 120;
+const b = (n) => (60 / BPM) * n;
+const P = { bg: '#141413', ink: '#F0EEE6', dim: '#8A887F', accent: '#D97757', card: '#1F1E1B', line: '#34322E' };
+const TYPE = [260, 34];                                  // fast and critically damped: type never overshoots
+const at = (from, to, draw) => ({ from, to, draw: (t, S) => draw(t + from, S) });   // scenes in absolute time
+
+// Largest size (stage units) at which `str` fits in maxW px, capped at maxSize.
+function fit(S, str, weight, face, maxW, maxSize = Infinity) {
+  const { g } = S;
+  g.save(); g.letterSpacing = '0px'; g.font = S.font(100, weight, face);
+  const w = g.measureText(str).width; g.restore();
+  return Math.min(maxSize, (100 * maxW) / w);
+}
+const measure = (S, str, size, weight, face) => { S.g.save(); S.g.letterSpacing = '0px'; S.g.font = S.font(size, weight, face); const w = S.g.measureText(str).width; S.g.restore(); return w; };
+
+// ── 1 · hook ────────────────────────────────────────────────────────────────
+const WORD = 'MOTION';
+function hookLayout(S) {
+  const { W, H } = S;
+  const size = fit(S, WORD, 800, 'ui', W * 0.84, S.pick({ portrait: 330, square: 260, landscape: 280 }));
+  const wordW = measure(S, WORD, size, 800, 'ui');
+  const x = S.pick({ portrait: W * 0.08, square: W * 0.08, landscape: (W - wordW) / 2 });
+  const y = S.pick({ portrait: H * 0.58, square: H * 0.6, landscape: H * 0.6 });
+  const oX = x + measure(S, 'M', size, 800, 'ui') + measure(S, 'O', size, 800, 'ui') / 2;
+  return { size, x, y, wordW, oX, oY: y - size * S.u * 0.36 };
+}
+
+function hook(t, S) {
+  const { g, W, u } = S;
+  const L = hookLayout(S), sz = L.size * u;
+  const push = 1 + 0.05 * spring(t, SPRING.heavy);       // slow camera push, never static
+  g.translate(L.oX, L.oY); g.scale(push, push); g.translate(-L.oX, -L.oY);
+
+  S.g.save();                                              // caption rises out of its own slot
+  g.beginPath(); g.rect(0, L.y - sz * 0.98 - 60 * u, W, 60 * u); g.clip();
+  S.text('a showreel rendered from code', L.x + 6 * u, L.y - sz * 0.98 - 14 * u + (1 - spring(t - b(2), TYPE)) * 60 * u,
+    { size: S.pick({ portrait: 44, square: 38, landscape: 38 }), weight: 500, color: P.dim, tracking: -0.01 });
+  S.g.restore();
+
+  g.save();                                                // letters rise from a slot on 16th notes
+  g.beginPath(); g.rect(0, L.y - sz * 0.8, W, sz * 0.84); g.clip();
+  let x = L.x;
+  for (let i = 0; i < WORD.length; i++) {
+    const s = spring(t - i * b(0.25), TYPE);
+    S.text(WORD[i], x, L.y + (1 - s) * sz * 0.85, { size: L.size, weight: 800, color: P.ink });
+    x += measure(S, WORD[i], L.size, 800, 'ui');
+  }
+  g.restore();
+
+  g.fillStyle = P.accent;                                  // underline wipes on beat 2
+  g.fillRect(L.x, L.y + 34 * u, L.wordW * spring(t - b(2), SPRING.snappy), 16 * u);
+}
+
+// ── 2 · one shape, four states ──────────────────────────────────────────────
+function shapes(t, S) {
+  const { g, W, H, u } = S;
+  const L = hookLayout(S);
+  const R = Math.hypot(W, H) * 1.05 * spring(t - b(3.5), [140, 24]);
+  g.beginPath(); g.arc(L.oX, L.oY, R, 0, Math.PI * 2); g.clip();   // circle wipe out of the "O"
+  g.fillStyle = P.accent; g.fillRect(0, 0, W, H);
+
+  const cx = W / 2, cy = S.pick({ portrait: H * 0.44, square: H * 0.43, landscape: H * 0.42 });
+  const k = [170, 24];
+  const T = [b(3.6), b(4), b(5), b(6), b(7), b(7.5)];
+  const pillW = S.pick({ portrait: 700, square: 700, landscape: 900 });
+  const w = track(t, [[0, 0], [T[1], 380], [T[2], 340], [T[3], pillW], [T[4], 170], [T[5], (W / u) * 1.6]], ...k) * u;
+  const h = track(t, [[0, 0], [T[1], 380], [T[2], 340], [T[3], 220], [T[4], 620], [T[5], (H / u) * 1.6]], ...k) * u;
+  const r = track(t, [[0, 190], [T[2], 48], [T[3], 110], [T[4], 28], [T[5], 0]], ...k) * u;
+  const rot = track(t, [[0, 0], [T[2], Math.PI / 4], [T[3], Math.PI], [T[5], Math.PI]], ...k);
+  g.save(); g.translate(cx, cy); g.rotate(rot);
+  g.fillStyle = P.bg; S.rrect(-w / 2, -h / 2, w, h, r); g.fill();
+  g.restore();
+
+  const labelY = S.pick({ portrait: cy + 500 * u, square: H * 0.9, landscape: H * 0.9 });
+  const names = ['circle', 'square', 'pill', 'bar'];
+  names.forEach((n, i) => {
+    const a = swapAlpha(t, b(4 + i), i === 3 ? b(7.4) : b(5 + i));
+    const rise = (1 - spring(t - b(4 + i), TYPE)) * 30 * u;
+    S.text(n, cx, labelY + rise, { size: S.pick({ portrait: 110, square: 90, landscape: 90 }), weight: 'italic 400', face: 'display', color: P.bg, align: 'center', alpha: a });
+  });
+}
+
+// ── 3 · type stack with a stretching indicator ──────────────────────────────
+const LINES = ['EVERY', 'FRAME', 'IS', 'CODE'];
+function stack(t, S) {
+  const { g, W, H, u } = S;
+  g.fillStyle = P.bg; g.fillRect(0, 0, W, H);
+  const exit = spring(t - b(11.75), [170, 26]);            // vertical push into the next shot
+  g.translate(0, -H * exit);
+
+  const size = fit(S, 'FRAME', 800, 'ui', W * 0.7, (H * 0.62) / u / 4);
+  const lh = size * u * 1.02, top = H / 2 - (lh * 4) / 2;
+  const blockW = measure(S, 'FRAME', size, 800, 'ui');
+  const x = S.pick({ portrait: W * 0.17, square: W * 0.17, landscape: (W - blockW) / 2 });
+  LINES.forEach((word, i) => {
+    const t0 = b(8 + i), y = top + lh * (i + 1) - lh * 0.12;
+    const s = spring(t - t0, TYPE), reveal = spring(t - t0, SPRING.snappy);
+    const current = t < b(9 + i) || i === 3;
+    const color = i === 3 ? P.accent : mixColor(P.ink, P.dim, current ? 0 : spring(t - b(9 + i), SPRING.default));
+    g.save();
+    g.beginPath(); g.rect(x - 20 * u, y - lh, (blockW + 60 * u) * reveal, lh * 1.1); g.clip();
+    S.text(word, x, y, { size, weight: 800, face: i === 3 ? 'mono' : 'ui', color, tracking: lerp(0.35, -0.02, s) });
+    g.restore();
+  });
+  const stops = LINES.map((_, i) => [b(8 + i), top + lh * i + lh * 0.2]);
+  const bar = indicator(t, stops, lh * 0.72);               // top and bottom edges on different springs
+  g.fillStyle = P.accent;
+  const barIn = spring(t - b(8), SPRING.snappy);
+  S.rrect(x - 56 * u, bar.left, 16 * u, (bar.right - bar.left) * barIn, 8 * u); g.fill();
+}
+
+// ── 4 · UI moment: cursor, press, morph to progress, success ────────────────
+function ui(t, S) {
+  const { g, W, H, u } = S;
+  const enter = 1 - spring(t - b(11.75), [170, 26]);
+  const exit = spring(t - b(16), [170, 26]);
+  g.translate(-W * exit, H * enter);
+  g.fillStyle = P.bg; g.fillRect(0, 0, W, H);
+
+  const cx = W / 2, cy = H / 2, zoom = S.pick({ portrait: 1.22, square: 1, landscape: 1 });
+  g.translate(cx, cy); g.scale(zoom, zoom); g.translate(-cx, -cy);
+  const cw = S.pick({ portrait: 820, square: 820, landscape: 960 }) * u, ch = 520 * u;
+  g.fillStyle = P.card; S.rrect(cx - cw / 2, cy - ch / 2, cw, ch, 40 * u); g.fill();
+  g.strokeStyle = P.line; g.lineWidth = 2 * u; g.stroke();
+  S.text('render.mjs', cx - cw / 2 + 48 * u, cy - ch / 2 + 78 * u, { size: 34, face: 'mono', color: P.dim });
+  S.text('● ● ●', cx + cw / 2 - 48 * u, cy - ch / 2 + 76 * u, { size: 22, color: P.line, align: 'right' });
+
+  const PRESS = 6.5, MORPH = 6.62, DONE = b(15);
+  const press = spring(t - PRESS + 0.06, SPRING.snappy) - spring(t - PRESS - 0.08, SPRING.snappy);
+  const bw = track(t, [[0, 400], [MORPH, 640], [DONE, 150]], 200, 26) * u;
+  const bh = track(t, [[0, 120], [MORPH, 24], [DONE, 150]], 200, 26) * u;
+  const by = cy + 40 * u;
+  g.save(); g.translate(cx, by); g.scale(1 - 0.06 * press, 1 - 0.06 * press);
+  g.fillStyle = t < MORPH ? P.accent : P.line;
+  S.rrect(-bw / 2, -bh / 2, bw, bh, bh / 2); g.fill();
+  if (t >= MORPH) {                                        // progress fill, then the bar becomes the check circle
+    const p = range(t, 6.8, 7.42);
+    g.fillStyle = P.accent;
+    S.rrect(-bw / 2, -bh / 2, Math.max(bh, bw * (t < DONE ? p : 1)), bh, bh / 2); g.fill();
+  }
+  S.text('Render film', 0, 14 * u, { size: 44, weight: 600, color: P.bg, align: 'center', alpha: swapAlpha(t, -1, MORPH) });
+  const draw = range(t, DONE + 0.12, DONE + 0.4);           // check mark strokes itself
+  if (draw > 0) {
+    g.strokeStyle = P.bg; g.lineWidth = 14 * u; g.lineCap = 'round'; g.lineJoin = 'round';
+    const pts = [[-34, 2], [-10, 26], [36, -22]].map(([x, y]) => [x * u, y * u]);
+    const l1 = Math.hypot(24, 24), l2 = Math.hypot(46, 48), d = draw * (l1 + l2);
+    g.beginPath(); g.moveTo(...pts[0]);
+    if (d <= l1) g.lineTo(lerp(pts[0][0], pts[1][0], d / l1), lerp(pts[0][1], pts[1][1], d / l1));
+    else { g.lineTo(...pts[1]); const q = (d - l1) / l2; g.lineTo(lerp(pts[1][0], pts[2][0], q), lerp(pts[1][1], pts[2][1], q)); }
+    g.stroke();
+  }
+  g.restore();
+  const frames = Math.round(900 * range(frameHold(t), 6.8, 7.42));
+  S.text(`frame ${String(frames).padStart(3, '0')} / 900`, cx, by - 70 * u, { size: 38, face: 'mono', color: P.ink, align: 'center', alpha: swapAlpha(t, MORPH, DONE) });
+  S.text('identical every run', cx, by + 150 * u + (1 - spring(t - DONE - 0.1, TYPE)) * 24 * u, { size: 40, weight: 500, color: P.dim, align: 'center', alpha: swapAlpha(t, DONE + 0.05) });
+
+  const cur = trackN(t, [[0, [cx + 520 * u, cy + 760 * u]], [6.05, [cx + 30 * u, by + 30 * u]], [7.7, [cx + 380 * u, by + 330 * u]]], 150, 24);
+  g.save(); g.translate(cur[0], cur[1]); g.scale((1.5 - 0.15 * press) * u, (1.5 - 0.15 * press) * u);
+  g.beginPath(); [[0, 0], [0, 34], [9, 26], [15, 40], [21, 37], [15, 24], [26, 24]].forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y)));
+  g.closePath(); g.fillStyle = P.ink; g.fill(); g.strokeStyle = P.bg; g.lineWidth = 2.5; g.stroke();
+  g.restore();
+}
+
+// ── 5 · data: a counter and a chart that draws itself ───────────────────────
+function data(t, S) {
+  const { g, W, H, u } = S;
+  const enter = 1 - spring(t - b(16), [170, 26]);
+  const collapse = spring(t - b(20), [200, 26]);
+  g.translate(W * enter, 0);
+  g.fillStyle = P.bg; g.fillRect(0, 0, W, H);
+  g.translate(W / 2, H / 2); g.scale(1 - collapse, 1 - collapse); g.translate(-W / 2, -H / 2);
+
+  const x = S.pick({ portrait: W * 0.1, square: W * 0.1, landscape: W * 0.12 });
+  const numSize = S.pick({ portrait: 300, square: 240, landscape: 260 });
+  const y = S.pick({ portrait: H * 0.36, square: H * 0.36, landscape: H * 0.4 });
+  const n = Math.round(900 * spring(frameHold(t) - b(16.2), [60, 16]));
+  const nw = S.text(String(n), x, y, { size: numSize, weight: 700, face: 'display', color: P.ink, tracking: -0.03 });
+  S.text('frames', x + Math.max(nw, measure(S, '900', numSize, 700, 'display') * 0.97) + 24 * u, y, { size: 56, weight: 500, color: P.dim, alpha: swapAlpha(t, b(16.5)) });
+  S.text('15 s × 60 fps × 4 subframes', x + 4 * u, y + 90 * u + (1 - spring(t - b(18), TYPE)) * 30 * u, { size: 38, face: 'mono', color: P.dim, alpha: swapAlpha(t, b(18)) });
+
+  const chartW = S.pick({ portrait: W * 0.8, square: W * 0.8, landscape: W * 0.76 });
+  const base = S.pick({ portrait: H * 0.8, square: H * 0.9, landscape: H * 0.88 });
+  const maxH = S.pick({ portrait: H * 0.3, square: H * 0.34, landscape: H * 0.3 });
+  const N = 14, gap = 14 * u, bw = (chartW - gap * (N - 1)) / N;
+  g.fillStyle = P.line; g.fillRect(x, base, chartW * spring(t - b(16.6), SPRING.default), 3 * u);
+  const pulse = beatPulse(t, BPM, { decay: 9 });
+  for (let i = 0; i < N; i++) {
+    const v = i === N - 1 ? 1 : 0.18 + 0.62 * (i / N) + 0.2 * hash(i, 11);
+    const s = spring(t - b(17) - i * 0.05, SPRING.snappy);
+    const hh = maxH * v * s * (1 + 0.05 * pulse * (i % 2 ? 1 : -1));
+    g.fillStyle = i === N - 1 ? P.accent : mixColor(P.line, P.ink, 0.25 + 0.5 * (i / N));
+    S.rrect(x + i * (bw + gap), base - hh, bw, hh, 6 * u); g.fill();
+  }
+}
+
+// ── 6 · depth without a 3D engine ───────────────────────────────────────────
+const N3 = 520;
+const GOLD = Math.PI * (3 - Math.sqrt(5));
+function depth(t, S) {
+  const { g, W, H, u } = S;
+  const R = S.pick({ portrait: 380, square: 330, landscape: 360 }) * u, f = 1400 * u;
+  const cx = W / 2, cy = S.pick({ portrait: H * 0.46, square: H * 0.46, landscape: H * 0.47 });
+  const ry = 0.5 * (t - b(20)) + track(t, [[0, 0], [b(20), 0], [b(21), 0.5], [b(22), 1.0], [b(23), 1.5]], 200, 24);
+  const rx = 0.42 + 0.1 * Math.sin(t * 0.8);
+  const torus = spring(t - b(22), SPRING.default);
+  const collapse = spring(t - b(24), [220, 28]);
+  const pts = [];
+  for (let i = 0; i < N3; i++) {
+    const yy = 1 - (i / (N3 - 1)) * 2, rr = Math.sqrt(1 - yy * yy), th = GOLD * i;
+    const sphere = [Math.cos(th) * rr * R, yy * R, Math.sin(th) * rr * R];
+    const a = (i / N3) * Math.PI * 2, c = a * 21;
+    const tor = [(R * 0.72 + R * 0.3 * Math.cos(c)) * Math.cos(a), R * 0.3 * Math.sin(c), (R * 0.72 + R * 0.3 * Math.cos(c)) * Math.sin(a)];
+    const grid = [((i / (N3 - 1)) - 0.5) * R * 3, 0, 0];    // start as a single line
+    const s = spring(t - b(20) - hash(i, 5) * 0.35, [150, 22]);
+    const m = torus * clamp(1.15 * spring(t - b(22) - hash(i, 9) * 0.2, SPRING.default));
+    let p = grid.map((gv, j) => lerp(gv, lerp(sphere[j], tor[j], m), s));
+    const [x0, y0, z0] = p;                                // rotate Y then X
+    const x1 = x0 * Math.cos(ry) + z0 * Math.sin(ry), z1 = -x0 * Math.sin(ry) + z0 * Math.cos(ry);
+    const y2 = y0 * Math.cos(rx) - z1 * Math.sin(rx), z2 = y0 * Math.sin(rx) + z1 * Math.cos(rx);
+    const k = (f / (f + z2)) * (1 - collapse);
+    pts.push([cx + x1 * k, cy + y2 * k, z2, Math.abs(yy) < 0.07 || (m > 0.5 && i % 13 === 0)]);
+  }
+  pts.sort((a, b2) => b2[2] - a[2]);
+  for (const [x, y, z, hot] of pts) {
+    const near = clamp(0.5 - z / (2 * R));
+    g.globalAlpha = 0.3 + 0.7 * near;
+    g.fillStyle = hot ? P.accent : P.ink;
+    g.beginPath(); g.arc(x, y, (2.5 + 4 * near) * u * (1 - collapse * 0.5), 0, Math.PI * 2); g.fill();
+  }
+  g.globalAlpha = 1;
+  const capY = S.pick({ portrait: H * 0.82, square: H * 0.93, landscape: H * 0.93 });
+  S.text('depth, without a 3D engine', cx, capY + (1 - spring(t - b(21), TYPE)) * 30 * u,
+    { size: S.pick({ portrait: 44, square: 38, landscape: 38 }), weight: 500, color: P.dim, align: 'center', alpha: swapAlpha(t, b(21), b(24)) });
+}
+
+// ── 7 · lockup on the final hit ─────────────────────────────────────────────
+function lockup(t, S) {
+  const { g, W, H, u } = S;
+  const size = fit(S, 'AI Motion Studio', 700, 'display', W * 0.84, S.pick({ portrait: 118, square: 104, landscape: 120 }));
+  const groupH = (200 + 50 + size + 180 + 44) * u;              // mark + gap + wordmark + tagline/pill
+  const cx = W / 2 + noise(t * 0.5, 4) * 3 * u, markY = H / 2 - groupH / 2 + 100 * u;
+  const hit = b(25);
+  const m = spring(t - hit, SPRING.heavy), ms = lerp(16, 200, m) * u;
+  g.fillStyle = P.accent;
+  S.rrect(cx - ms / 2, markY - ms / 2, ms, ms, lerp(8, 48, m) * u); g.fill();
+
+  const draw = range(t, hit + 0.15, hit + 0.6);               // the mark is a spring response curve
+  if (draw > 0) {
+    g.save(); g.beginPath(); g.rect(cx - ms / 2, markY - ms / 2, ms, ms); g.clip();
+    g.strokeStyle = P.bg; g.lineWidth = 12 * u; g.lineCap = 'round'; g.beginPath();
+    for (let i = 0; i <= 60 * draw; i++) {
+      const x = i / 60, y = spring(x * 0.62, SPRING.playful);
+      const px = cx - 66 * u + x * 132 * u, py = markY + 46 * u - y * 72 * u;
+      i ? g.lineTo(px, py) : g.moveTo(px, py);
+    }
+    g.stroke(); g.restore();
+  }
+
+  const wy = markY + ms / 2 + (size + 50) * u;
+  g.save(); g.beginPath(); g.rect(0, wy - size * u, W, size * u * 1.25); g.clip();
+  S.text('AI Motion Studio', cx, wy + (1 - spring(t - b(26), TYPE)) * size * u, { size, weight: 700, face: 'display', color: P.ink, align: 'center', tracking: -0.02 });
+  g.restore();
+  S.text('films are programs', cx, wy + 80 * u + (1 - spring(t - b(27), TYPE)) * 24 * u, { size: 48, weight: 500, color: P.dim, align: 'center', alpha: swapAlpha(t, b(27)) });
+
+  const pill = spring(t - b(28), SPRING.snappy), pw = 420 * u * pill, py = wy + 180 * u;
+  if (pill > 0.01) {
+    g.strokeStyle = P.accent; g.lineWidth = 3 * u;
+    S.rrect(cx - pw / 2, py - 44 * u, pw, 88 * u, 44 * u); g.stroke();
+    S.text('npm run demo', cx, py + 14 * u, { size: 42, face: 'mono', color: P.ink, align: 'center', alpha: swapAlpha(t, b(28)) });
+  }
+}
+
+boot({
+  title: 'AI Motion Studio · Showreel', dur: DUR, bpm: BPM, formats: ['9:16', '1:1', '16:9'], palette: P, poster: 13.9,
+  music: { style: 'pulse', key: 'A', seed: 3, breaks: [5], end: b(25) },
+  cues: [
+    { t: 0, type: 'thump' }, ...WORD.split('').map((_, i) => ({ t: i * b(0.25), type: 'tick', gain: 0.7 })),
+    { t: b(2), type: 'swipe' }, { t: b(3.5), type: 'whoosh' },
+    ...[4, 5, 6, 7].map((n) => ({ t: b(n), type: 'pop', gain: 0.8 })), { t: b(7.5), type: 'whoosh' },
+    ...[8, 9, 10, 11].map((n) => ({ t: b(n), type: 'thump', gain: 0.45 })), { t: b(11.75), type: 'whoosh' },
+    { t: 6.5, type: 'click' }, { t: 6.62, type: 'pop', gain: 0.6 },
+    ...Array.from({ length: 7 }, (_, i) => ({ t: 6.8 + i * 0.1, type: 'tick', gain: 0.35 })),
+    { t: b(15), type: 'chime' }, { t: b(16), type: 'whoosh' },
+    ...Array.from({ length: 14 }, (_, i) => ({ t: b(17) + i * 0.05, type: 'tick', gain: 0.4 })), { t: b(18), type: 'click' },
+    { t: b(20), type: 'whoosh' }, ...[21, 22, 23].map((n) => ({ t: b(n), type: 'thump', gain: 0.35 })), { t: b(22), type: 'swipe' },
+    { t: b(24), type: 'whoosh', gain: 0.8 }, { t: b(25), type: 'riser', gain: 0.8 }, { t: b(25), type: 'impact' },
+    { t: b(26), type: 'thump', gain: 0.4 }, { t: b(27), type: 'pop', gain: 0.5 }, { t: b(28), type: 'click' },
+  ],
+  scenes: [
+    at(0, b(4.2), hook),
+    at(b(3.5), b(8.3), shapes),
+    at(b(7.9), b(12.4), stack),
+    at(b(11.75), b(16.6), ui),
+    at(b(16), b(20.8), data),
+    at(b(20), b(24.9), depth),
+    at(b(24.5), DUR, lockup),
+  ],
+});
+</script>

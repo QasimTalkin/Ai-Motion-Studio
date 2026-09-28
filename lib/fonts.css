@@ -1,0 +1,13 @@
+/* House faces, served locally from node_modules so renders never depend on the network.
+   Display: Source Serif 4. UI: Inter. Code: JetBrains Mono. */
+@import url('/node_modules/@fontsource/source-serif-4/latin-400.css');
+@import url('/node_modules/@fontsource/source-serif-4/latin-600.css');
+@import url('/node_modules/@fontsource/source-serif-4/latin-700.css');
+@import url('/node_modules/@fontsource/source-serif-4/latin-400-italic.css');
+@import url('/node_modules/@fontsource/inter/latin-400.css');
+@import url('/node_modules/@fontsource/inter/latin-500.css');
+@import url('/node_modules/@fontsource/inter/latin-600.css');
+@import url('/node_modules/@fontsource/inter/latin-700.css');
+@import url('/node_modules/@fontsource/inter/latin-800.css');
+@import url('/node_modules/@fontsource/jetbrains-mono/latin-400.css');
+@import url('/node_modules/@fontsource/jetbrains-mono/latin-700.css');
