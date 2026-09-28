@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Motion</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<style>html,body{margin:0;background:#141413}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// One film = this file. window.seek(t) paints frame t; nothing here may depend on a clock.
+// Rules: CLAUDE.md. Primitives: /lib/motion.js. Stage + layout: /lib/stage.js.
+// Preview: npm run preview <this folder>   Render: npm run film <this folder>
+import { spring, track, clamp, range, rng, noise, beatPulse, swapAlpha, SPRING } from '/lib/motion.js';
+import { boot } from '/lib/stage.js';
+
+// ── film config (npm run new fills these in) ──
+const TITLE = 'Motion';
+const DUR = 12;
+const BPM = 120;
+const FORMATS = ['9:16', '1:1', '16:9'];
+
+const P = { bg: '#141413', ink: '#F0EEE6', dim: '#8A887F', accent: '#D97757' };
+const b = (n) => (60 / BPM) * n;      // time of beat n (the stage exposes the same as S.beat)
+
+boot({
+  title: TITLE, dur: DUR, bpm: BPM, formats: FORMATS, palette: P,
+
+  // Score + SFX. music: { style: 'pulse' | 'piano' | 'minimal', key: 'A', seed } or { file: 'audio/track.wav' }
+  music: { style: 'pulse', key: 'A', seed: 1 },
+  // SFX on the beat grid. Types: click pop thump whoosh tick riser impact type chime glitch
+  cues: [
+    { t: b(0), type: 'thump' }, { t: b(1), type: 'whoosh' },
+    ...Array.from({ length: 12 }, (_, i) => ({ t: b(8) + i * 0.05, type: 'tick', gain: 0.5 })),
+    { t: b(16), type: 'whoosh' }, { t: b(17), type: 'impact' },
+  ],
+
+  scenes: [
+    { from: 0, to: b(8), draw(t, S) {                 // 1. hook: kinetic type on the downbeat
+      const { g, W, H, u } = S;
+      const words = ['MAKE', 'IT', 'MOVE'];
+      const size = S.pick({ portrait: 220, square: 200, landscape: 190 });
+      words.forEach((w, i) => {
+        const s = spring(t - b(i), SPRING.heavy);
+        const y = H * 0.36 + i * size * 1.02 * u;
+        g.save(); g.translate(W * 0.1, y + (1 - s) * 80 * u);
+        g.beginPath(); g.rect(-W, -size * u, W * 3, size * 1.1 * u); g.clip();   // mask: words rise out of a slot
+        S.text(w, 0, (1 - s) * size * u, { size, weight: 800, tracking: -0.04, color: i === 2 ? P.accent : P.ink });
+        g.restore();
+      });
+      const bar = spring(t - b(3), SPRING.snappy);
+      g.fillStyle = P.accent; g.fillRect(W * 0.1, H * 0.36 + 2.4 * size * u, W * 0.8 * bar, 12 * u);
+    }},
+    { from: b(8), to: b(16), draw(t, S) {             // 2. staggered grid, rows follow the beat
+      const { g, W, H, u } = S;
+      const r = rng(7), cols = S.pick({ portrait: 6, square: 7, landscape: 11 });
+      const cell = (W * 0.84) / cols, rows = Math.floor((H * 0.7) / cell);
+      const pulse = beatPulse(t, BPM, { decay: 8 });
+      for (let i = 0; i < cols * rows; i++) {
+        const x = W * 0.08 + (i % cols) * cell + cell / 2, y = H * 0.15 + Math.floor(i / cols) * cell + cell / 2;
+        const s = spring(t - Math.floor(i / cols) * 0.06 - r() * 0.12, 260, 20);
+        const hot = (i * 7) % 11 === 0;
+        const size = cell * 0.7 * s * (hot ? 1 + pulse * 0.15 : 1);
+        g.fillStyle = hot ? P.accent : P.ink;
+        S.rrect(x - size / 2, y - size / 2, size, size, 10 * u * s); g.fill();
+      }
+      S.text('rendered from code', W * 0.08, H * 0.92, { size: 44, weight: 500, color: P.dim, alpha: range(t, 0.4, 0.8) });
+    }},
+    { from: b(16), to: DUR, draw(t, S) {               // 3. lockup: heavy spring, no fade-in
+      const { g, W, H, u } = S;
+      const s = spring(t - b(1), SPRING.heavy);
+      const drift = noise(t * 0.6, 3) * 4 * u;
+      g.translate(W / 2 + drift, H / 2);
+      g.fillStyle = P.accent;
+      const w = 520 * u * spring(t, SPRING.snappy);
+      S.rrect(-w / 2, -100 * u, w, 200 * u, 100 * u); g.fill();
+      S.text(TITLE, 0, 30 * u * (1 - s) + 26 * u, { size: 96, weight: 700, face: 'display', color: P.bg, align: 'center', alpha: swapAlpha(t, b(1)) });
+    }},
+  ],
+});
+</script>
