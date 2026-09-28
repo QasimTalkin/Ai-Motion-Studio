@@ -1,7 +1,7 @@
 # Showreel: shot list
 
 **Logline:** a 15-second résumé reel where every shot is a different technique, and the punchline is that all of it is code.
-**Duration / BPM / formats:** 15 s · 120 BPM (1 beat = 0.5 s) · 9:16, 1:1, 16:9
+**Duration / BPM / formats:** 15 s · 120 BPM (1 beat = 0.5 s) · 9:16, 16:9
 **Music:** synthesized `pulse` in A minor, drums drop out for bar 5, final hit on beat 25
 
 | # | Beats (time) | Shot | Technique | Camera | On-screen text | SFX |

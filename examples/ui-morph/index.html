@@ -155,7 +155,7 @@ function content(t, S, w, h) {
 }
 
 boot({
-  title: 'UI Morph Loop', dur: DUR, bpm: BPM, loop: true, formats: ['9:16', '1:1', '16:9'], palette: P, poster: b(15.8),
+  title: 'UI Morph Loop', dur: DUR, bpm: BPM, loop: true, formats: ['9:16', '16:9'], palette: P, poster: b(15.8),
   music: { style: 'minimal', key: 'D', seed: 2 },
   cues: [
     ...PRESSES.map((t) => ({ t: t - 0.03, type: 'click' })),

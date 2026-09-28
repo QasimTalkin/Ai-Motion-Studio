@@ -36,5 +36,5 @@ Anything missing: pick a good default and go.
 
 ## 4. Deliver
 1. `node scripts/render.mjs films/<name>.html` → `out/<name>/final.mp4`. Open `out/<name>/contact.png`.
-2. Other formats if asked: add `--size 1080x1080` or `--size 1920x1080`.
+2. Then the 16:9 version: add `--size 1920x1080`. Deliver both files.
 3. Reply with the path to `final.mp4`, the final scores, and one line on what you'd improve next.

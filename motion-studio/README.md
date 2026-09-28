@@ -58,7 +58,7 @@ Before the final render, the agent checks one frame per beat, scores it, and fix
 ```bash
 node scripts/render.mjs films/my-film.html --stills        # one frame per beat → out/my-film/stills.png
 node scripts/render.mjs films/my-film.html                 # the video → out/my-film/final.mp4
-node scripts/render.mjs films/my-film.html --size 1920x1080   # 16:9 (or 1080x1080) from the same film
+node scripts/render.mjs films/my-film.html --size 1920x1080   # the 16:9 version of the same film
 ```
 
 Also: `--draft` (fast preview), `--music song.wav` (your own track; measure it with `python3 scripts/beats.py song.wav`).

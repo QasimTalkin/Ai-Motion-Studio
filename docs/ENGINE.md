@@ -21,7 +21,7 @@ boot({
   dur: 15,                  // seconds
   bpm: 120,                 // beat grid; S.beat(n) = beatOffset + n * 60 / bpm
   beatOffset: 0,            // first downbeat of a supplied track
-  formats: ['9:16'],                 // default. Add '1:1', '16:9', '4:5' or 'WxH' on request
+  formats: ['9:16', '16:9'],         // default: vertical first, then landscape. No 1:1
   loop: false,              // true: check.mjs verifies seek(dur) === seek(0), no audio fade-out
   palette: { bg, ink, dim, accent },  // bg paints every frame
   images: { logo: 'assets/logo.png' },          // preloaded, S.img('logo')

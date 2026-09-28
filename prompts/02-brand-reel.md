@@ -24,7 +24,7 @@ Story (one beat each, 2 to 4 seconds)
 Sound
 - Original music, 120 BPM, synthesized in code. UI clicks and whooshes on the beat.
 
-Format: 1080x1920 (9:16). Add 1:1 or 16:9 from the same timeline only if you need them.
+Format: 1080x1920 (9:16) and 1920x1080 (16:9) from the same timeline.
 Before the full render, show me a contact sheet of one frame per beat (npm run stills).
 ```
 

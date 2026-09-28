@@ -285,7 +285,7 @@ function lockup(t, S) {
 }
 
 boot({
-  title: 'AI Motion Studio · Showreel', dur: DUR, bpm: BPM, formats: ['9:16', '1:1', '16:9'], palette: P, poster: 13.9,
+  title: 'AI Motion Studio · Showreel', dur: DUR, bpm: BPM, formats: ['9:16', '16:9'], palette: P, poster: 13.9,
   music: { style: 'pulse', key: 'A', seed: 3, breaks: [5], end: b(25) },
   cues: [
     { t: 0, type: 'thump' }, ...WORD.split('').map((_, i) => ({ t: i * b(0.25), type: 'tick', gain: 0.7 })),

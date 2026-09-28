@@ -1,4 +1,4 @@
-// npm run preview [film] -- [--port 4321] [--format 1:1]
+// npm run preview [film] -- [--port 4321] [--format 16:9]
 // Serves the repo and prints live-preview links. Space = play/pause, ←/→ = scrub, click the bar to seek.
 // If the film has out/mix.wav (npm run audio), the preview plays in sync with the soundtrack.
 import { readdirSync, existsSync } from 'node:fs';
@@ -13,4 +13,4 @@ const films = a._[0] ? [findFilm(a._[0])] : ['examples', 'films', 'templates'].f
 });
 console.log(`\nAI Motion Studio preview — ${url}\n`);
 for (const f of films) console.log(`  ${relative(ROOT, f).padEnd(28)} ${filmUrl(url, f, a.format ? { format: a.format } : {})}`);
-console.log('\n  space play/pause · ←/→ scrub 0.5s · shift+←/→ one frame · ?format=1:1 · ?t=3.2 freezes\n  Ctrl+C to stop\n');
+console.log('\n  space play/pause · ←/→ scrub 0.5s · shift+←/→ one frame · ?format=16:9 · ?t=3.2 freezes\n  Ctrl+C to stop\n');

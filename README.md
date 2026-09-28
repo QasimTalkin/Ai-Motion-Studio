@@ -9,11 +9,11 @@ No After Effects, no timeline, no stock music. Every frame is code.
 <table>
 <tr>
 <td width="34%"><img src="assets/readme/showreel.gif" alt="Showreel, 9:16"></td>
-<td width="66%"><img src="assets/readme/ui-morph.gif" alt="UI morph loop, 1:1"></td>
+<td width="66%"><img src="assets/readme/ui-morph.gif" alt="UI morph loop, 16:9"></td>
 </tr>
 <tr>
 <td><b>Showreel</b>: 15 s, 7 shots, 7 techniques.<br><a href="assets/readme/showreel-9x16.mp4">9:16 MP4 with sound</a> · <a href="assets/readme/showreel-16x9.mp4">16:9</a> · <a href="examples/showreel/index.html">source</a></td>
-<td><b>UI morph loop</b>: one container, 11 states, seamless 16 s loop.<br><a href="assets/readme/ui-morph-1x1.mp4">1:1 MP4 with sound</a> · <a href="examples/ui-morph/index.html">source</a></td>
+<td><b>UI morph loop</b>: one container, 11 states, seamless 16 s loop.<br><a href="assets/readme/ui-morph-16x9.mp4">16:9 MP4 with sound</a> · <a href="examples/ui-morph/index.html">source</a></td>
 </tr>
 </table>
 
@@ -35,7 +35,7 @@ npm install
 npm run demo
 ```
 
-About two minutes later you have `examples/showreel/out/9x16/final.mp4` (plus `1x1/` and `16x9/`), with sound.
+About two minutes later you have `examples/showreel/out/9x16/final.mp4` (plus `16x9/`), with sound.
 If anything fails, run `npm run doctor` and it will tell you what's missing.
 
 ## Make your own: just ask Claude
@@ -62,7 +62,7 @@ pipeline, so Claude will:
 1. scaffold `films/<name>/` and write a shot list on the beat grid,
 2. build the film as one `index.html` using the springs and layout helpers in `lib/`,
 3. render one frame per beat, **look at it**, score it, and fix the 3 worst problems (3+ rounds),
-4. synthesize the score and SFX, mix to -14 LUFS, render 9:16 (1:1 and 16:9 on request),
+4. synthesize the score and SFX, mix to -14 LUFS, render 9:16 and 16:9,
 5. hand you `final.mp4` for every format, plus a contact sheet, phone test and poster.
 
 For best results start Claude Code at **xhigh** effort for new films (`/model`, then set effort), **max** for a launch
@@ -84,7 +84,7 @@ flowchart LR
   B -->|ffmpeg tmix + H.264| C["silent.mp4"]
   A -->|cues + beat grid| D["score + SFX<br/>synthesized in code"]
   D -->|loudnorm -14 LUFS| E["mix.wav"]
-  C --> F["final.mp4<br/>9:16 (1:1 · 16:9 on request)"]
+  C --> F["final.mp4<br/>9:16 · 16:9"]
   E --> F
   F --> G["contact · strip · phone<br/>poster · loop check"]
   G -->|Claude looks, scores, fixes| A
@@ -99,7 +99,7 @@ flowchart LR
   synthesized in code on the beat grid. You can also supply a track and measure it with `studio/beats.py`.
 - **Every format from one timeline.** Scenes are laid out in stage units, so each format is reframed, not cropped:
 
-<img src="assets/readme/formats.png" alt="The same moment rendered at 9:16, 1:1 and 16:9">
+<img src="assets/readme/formats.png" alt="The same moment rendered at 9:16 and 16:9">
 
 ## The critique loop
 

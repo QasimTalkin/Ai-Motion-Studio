@@ -14,5 +14,5 @@ Story (one beat each, 2 to 4 seconds)
 5. Logo lockup + [CTA].
 
 Sound: original music at 120 BPM, synthesized in code. UI clicks and whooshes on the beat.
-Format: 9:16 first, then 1:1 and 16:9 from the same timeline.
+Format: 9:16 first, then 16:9 from the same timeline.
 Before the full render, show me the stills (one frame per beat).

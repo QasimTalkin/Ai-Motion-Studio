@@ -12,8 +12,8 @@ You make motion-graphics videos as code. One HTML file paints any frame through 
 - Motion comes from `lib/motion.js`: closed-form springs. A value with many targets uses `track()`.
   Tiny overshoot on UI, none on type.
 - Never use will-change on anything the camera scales (blurry text).
-- Other formats come from the same timeline: `--size 1080x1080`, `--size 1920x1080`. Lay out with
-  W and H, not fixed pixels.
+- Deliver two formats from the same timeline: 9:16 (default) and 16:9 (`--size 1920x1080`). No 1:1.
+  Lay out with W and H, not fixed pixels.
 
 ## Look
 - Banned defaults: centered title on gradient, everything fading in,
