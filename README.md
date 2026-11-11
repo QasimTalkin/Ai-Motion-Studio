@@ -122,7 +122,8 @@ sync, fixes the 3 worst problems, and repeats until everything is 8+.
 | `npm run stills <film>` | One frame per beat → `out/stills.png` |
 | `npm run film <film> [-- --draft]` | Everything: check → sound → render all formats → mux → sheets |
 | `npm run render <film> -- --from 4 --to 6` | Re-render only the seconds you fixed |
-| `npm run audio <film>` | Score + SFX → `out/mix.wav` at -14 LUFS, and `out/beats.json` |
+| `npm run tts <film>` | Narration from `audio/script.json` (Google TTS), with word timings for subtitles and cues |
+| `npm run audio <film>` | Score + SFX (+ voice) → `out/mix.wav` at -14 LUFS, and `out/beats.json` |
 | `npm run sheets <film> -- --at 4.2` | Contact sheet, strip, phone test, poster, loop check |
 
 ## What's in the box

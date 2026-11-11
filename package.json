@@ -12,6 +12,7 @@
     "check": "node studio/check.mjs",
     "render": "node studio/render.mjs",
     "audio": "node studio/audio.mjs",
+    "tts": "node studio/tts.mjs",
     "sheets": "node studio/sheets.mjs",
     "film": "node studio/film.mjs",
     "demo": "node studio/film.mjs examples/showreel",

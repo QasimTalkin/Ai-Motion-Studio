@@ -27,7 +27,8 @@ Never ask a beginner to write code or pick libraries. Pick sensible defaults and
 | `npm run check <film>` | Lints banned APIs, checks determinism and the loop seam |
 | `npm run stills <film> -- [--every beat\|0.5] [--format 9:16]` | One frame per beat → `out/stills.png` |
 | `npm run render <film> -- [--format 9:16] [--from 4 --to 6] [--draft]` | Silent video |
-| `npm run audio <film>` | Score + SFX → `out/mix.wav` at -14 LUFS, plus `out/beats.json` |
+| `npm run tts <film>` | Narration from `audio/script.json` (Google TTS) → `audio/voice.wav` + word timings in `audio/timing.json` |
+| `npm run audio <film>` | Score + SFX (+ voice, music ducked under it) → `out/mix.wav` at -14 LUFS, plus `out/beats.json` |
 | `npm run sheets <film> -- [--at 4.2]` | Contact sheet, strip, phone test, loop check, poster |
 | `npm run film <film> -- [--draft] [--format 9:16]` | Everything above for each format in the film's `formats`, muxed `final.mp4` |
 | `python studio/beats.py song.wav > beats.json` | Measure a supplied track (needs numpy, librosa, soundfile) |

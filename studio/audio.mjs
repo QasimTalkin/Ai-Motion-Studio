@@ -2,7 +2,9 @@
 // Builds the soundtrack on the film's own timeline:
 //   music.wav  - synthesized score (or the supplied track, converted, unchanged)
 //   sfx.wav    - every cue from the film's `cues`
-//   mix.wav    - both, mixed and normalized to -14 LUFS / -1 dBTP (two-pass loudnorm)
+//   voice.wav  - the film's narration (`voice: { file }`, e.g. audio/voice.wav from npm run tts)
+//   mix.wav    - all of it, mixed and normalized to -14 LUFS / -1 dBTP (two-pass loudnorm).
+//                Under a voice the music is ducked by a sidechain compressor keyed on the voice.
 //   beats.json - beat grid (measured with beats.py for supplied tracks when librosa is installed)
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -18,7 +20,9 @@ export async function audio(dir, meta) {
   mkdirSync(out, { recursive: true });
   const { dur, bpm, beatOffset = 0, cues = [] } = meta;
   const music = meta.music || false;
+  const voice = meta.voice?.file ? meta.voice : null;
   const musicWav = join(out, 'music.wav'), sfxWav = join(out, 'sfx.wav'), mixWav = join(out, 'mix.wav');
+  const voiceWav = join(out, 'voice.wav');
   let grid = beatGrid({ bpm, dur, beatOffset, cues });
 
   if (music && music.file) {
@@ -38,10 +42,27 @@ export async function audio(dir, meta) {
   writeWav(sfxWav, [synthSfx(cues, dur)]);
   console.log(`  sfx: ${cues.length} cues`);
 
-  const inputs = [], weights = [];
-  if (music) { inputs.push('-i', musicWav); weights.push(music.volume ?? 1); }
-  inputs.push('-i', sfxWav); weights.push(meta.sfxVolume ?? 0.9);
-  const pre = `amix=inputs=${weights.length}:weights=${weights.join(' ')}:normalize=0:duration=longest,atrim=0:${dur},` +
+  if (voice) {
+    const src = resolve(dir, voice.file);
+    if (!existsSync(src)) throw new Error(`voice.file not found: ${src} (run npm run tts)`);
+    await run(ffmpeg(), ['-y', '-i', src, '-t', String(dur), '-ac', '1', '-ar', '48000', voiceWav]);
+    console.log(`  voice: ${voice.file}${music && voice.duck !== false ? ' (music ducks under it)' : ''}`);
+  }
+
+  // Inputs in order: music?, sfx, voice?. Labels feed one amix.
+  const inputs = [], weights = [], labels = [];
+  let graph = '';
+  if (music) { inputs.push('-i', musicWav); labels.push('[0:a]'); weights.push(music.volume ?? 1); }
+  inputs.push('-i', sfxWav); labels.push(`[${labels.length}:a]`); weights.push(meta.sfxVolume ?? 0.9);
+  if (voice) {
+    const v = labels.length;
+    inputs.push('-i', voiceWav); weights.push(voice.volume ?? 1);
+    if (music && voice.duck !== false) {
+      graph += `[${v}:a]asplit=2[vo][vkey];[0:a][vkey]sidechaincompress=threshold=0.04:ratio=4:attack=20:release=450[ducked];`;
+      labels[0] = '[ducked]'; labels.push('[vo]');
+    } else labels.push(`[${v}:a]`);
+  }
+  const pre = `${graph}${labels.join('')}amix=inputs=${weights.length}:weights=${weights.join(' ')}:normalize=0:duration=longest,atrim=0:${dur},` +
     (meta.loop ? '' : `afade=t=out:st=${Math.max(0, dur - 0.4)}:d=0.4,`);
   // pass 1: measure
   const log = await run(ffmpeg(), ['-hide_banner', ...inputs, '-filter_complex',
