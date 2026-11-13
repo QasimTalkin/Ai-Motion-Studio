@@ -1,0 +1,517 @@
+{
+ "voice": {
+  "languageCode": "fr-FR",
+  "name": "fr-FR-Neural2-B",
+  "speakingRate": 0.95,
+  "pitch": -1.0,
+  "effectsProfileId": [
+   "large-home-entertainment-class-device"
+  ]
+ },
+ "bpm": 120,
+ "snap": 1,
+ "lead": 0.7,
+ "gap": 0.4,
+ "tail": 0,
+ "lines": [
+  {
+   "id": "t1",
+   "voice": {
+    "languageCode": "fr-CA",
+    "name": "fr-CA-Chirp3-HD-Aoede",
+    "speakingRate": 1,
+    "pitch": 0
+   },
+   "text": "J’ai échoué l’examen… parce que j’étais occupée avec les enfants, à la maison.",
+   "gapAfter": 0.55,
+   "subs": [
+    {
+     "text": "“I failed the exam…",
+     "keys": {
+      "failed": 0.55
+     }
+    },
+    {
+     "text": "because I was busy with the kids at home.”",
+     "at": 1.27,
+     "keys": {
+      "kids": 2.75,
+      "home.”": 3.5
+     }
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "voice": {
+    "languageCode": "fr-FR",
+    "name": "fr-FR-Chirp3-HD-Leda",
+    "speakingRate": 1,
+    "pitch": 0
+   },
+   "text": "Je ne peux pas fournir ce document… car je n’ai pas fait mes études ici.",
+   "gapAfter": 0.55,
+   "subs": [
+    {
+     "text": "“I can’t provide this document…",
+     "keys": {
+      "document…": 1.75
+     }
+    },
+    {
+     "text": "because I didn’t study here.”",
+     "at": 2.33,
+     "keys": {
+      "here.”": 3.05
+     }
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "voice": {
+    "languageCode": "fr-CA",
+    "name": "fr-CA-Chirp3-HD-Charon",
+    "speakingRate": 1,
+    "pitch": 0
+   },
+   "text": "J’ai l’impression… de ne pas être compris par mes directeurs.",
+   "gapAfter": 0.8,
+   "subs": [
+    {
+     "text": "“I feel like my managers",
+     "keys": {
+      "feel": 0.6
+     }
+    },
+    {
+     "text": "don’t understand me.”",
+     "at": 1.26,
+     "keys": {
+      "understand": 1.9
+     }
+    }
+   ]
+  },
+  {
+   "id": "p",
+   "text": "{a}Pourquoi je vis {emo}ces émotions {b}et n’arrive pas à répondre {exi}aux exigences institutionnelles ?",
+   "gapAfter": 0.9,
+   "subs": [
+    {
+     "text": "Why do I feel these emotions",
+     "keys": {
+      "emotions": "emo"
+     }
+    },
+    {
+     "text": "and fail to meet institutional requirements?",
+     "at": "b",
+     "keys": {
+      "institutional requirements?": "exi"
+     }
+    }
+   ]
+  },
+  {
+   "id": "s1",
+   "text": "{a}Pour {ds}Dorothy Smith, {b}le problème vient du fait que {inst}les institutions, ou les organisations, {neg}ont tendance à négliger {exp}les expériences personnelles, {pv}ou « le point de vue situé », {c}de certaines personnes {rel}dans leur rapport avec elles.",
+   "gapAfter": 0.5,
+   "subs": [
+    {
+     "text": "For Dorothy Smith, the problem comes from the fact",
+     "keys": {
+      "Dorothy Smith,": "ds"
+     }
+    },
+    {
+     "text": "that institutions, or organizations,",
+     "at": "inst"
+    },
+    {
+     "text": "tend to neglect the personal experiences,",
+     "at": "neg",
+     "keys": {
+      "neglect": "neg",
+      "personal experiences,": "exp"
+     }
+    },
+    {
+     "text": "or the “situated standpoint”, of certain people",
+     "at": "pv",
+     "keys": {
+      "“situated standpoint”,": "pv"
+     }
+    },
+    {
+     "text": "in their relationship with them.",
+     "at": "rel"
+    }
+   ]
+  },
+  {
+   "id": "sx",
+   "text": "{a}Le point de vue situé, {b}c’est le savoir qui naît {exp}de l’expérience concrète d’une personne, {loc}là où elle vit {work}et travaille.",
+   "gapAfter": 0.6,
+   "subs": [
+    {
+     "text": "The situated standpoint is knowledge",
+     "keys": {
+      "situated standpoint": "a"
+     }
+    },
+    {
+     "text": "that comes from a person’s concrete experience,",
+     "at": "exp",
+     "keys": {
+      "concrete experience,": "exp"
+     }
+    },
+    {
+     "text": "where they live and work.",
+     "at": "loc",
+     "keys": {
+      "live": "loc",
+      "work.": "work"
+     }
+    }
+   ]
+  },
+  {
+   "id": "s2",
+   "text": "{a}Comme alternative, {b}elle propose d’étudier ce rapport, {disc}ou ce discours institutionnel, {c}à l’aide d’une méthode inédite, {ei}connue sous le nom d’ethnographie institutionnelle.",
+   "gapAfter": 0.45,
+   "subs": [
+    {
+     "text": "As an alternative, she proposes to study this relationship,",
+     "keys": {
+      "she proposes": "b"
+     }
+    },
+    {
+     "text": "or this institutional discourse,",
+     "at": "disc",
+     "keys": {
+      "institutional discourse,": "disc"
+     }
+    },
+    {
+     "text": "with an original method known as institutional ethnography.",
+     "at": "c",
+     "keys": {
+      "institutional ethnography.": "ei"
+     }
+    }
+   ]
+  },
+  {
+   "id": "s3",
+   "text": "{a}Voici les {four}principales assises {m}de sa méthode.",
+   "gapAfter": 0.6,
+   "subs": [
+    {
+     "text": "Here are the main foundations of her method.",
+     "keys": {
+      "main foundations": "four"
+     }
+    }
+   ]
+  },
+  {
+   "id": "f1",
+   "text": "{n}Un : {txt}les textes institutionnels {pow}exercent une forme de pouvoir {ind}sur l’individu, {conf}qui n’a pas d’autre choix que de s’y conformer.",
+   "gapAfter": 0.45,
+   "subs": [
+    {
+     "text": "1. Institutional texts exert a form of power",
+     "keys": {
+      "Institutional texts": "txt",
+      "power": "pow"
+     }
+    },
+    {
+     "text": "over individuals, who have no choice but to conform.",
+     "at": "ind",
+     "keys": {
+      "conform.": "conf"
+     }
+    }
+   ]
+  },
+  {
+   "id": "f1x",
+   "text": "{a}Un formulaire, {b}un règlement d’examen, {c}une politique d’embauche : {d}partout, {same}les mêmes textes coordonnent {act}ce que font les gens.",
+   "gapAfter": 0.6,
+   "subs": [
+    {
+     "text": "A form, exam regulations, a hiring policy:",
+     "keys": {
+      "form,": "a",
+      "exam regulations,": "b",
+      "hiring policy:": "c"
+     }
+    },
+    {
+     "text": "everywhere, the same texts coordinate what people do.",
+     "at": "d",
+     "keys": {
+      "same texts": "same"
+     }
+    }
+   ]
+  },
+  {
+   "id": "f2",
+   "text": "{n}Deux : {sav}les savoirs sont localement situés, {org}et organisés via des textes {esp}au sein des espaces institutionnels.",
+   "gapAfter": 0.6,
+   "subs": [
+    {
+     "text": "2. Knowledge is locally situated,",
+     "keys": {
+      "locally situated,": "sav"
+     }
+    },
+    {
+     "text": "and organized through texts within institutional spaces.",
+     "at": "org",
+     "keys": {
+      "through texts": "org",
+      "institutional spaces.": "esp"
+     }
+    }
+   ]
+  },
+  {
+   "id": "f3",
+   "text": "{n}Trois : {exp}ces expériences sont structurées {reg}par des rapports de régulation, {ext}ou par des influences externes.",
+   "gapAfter": 0.6,
+   "subs": [
+    {
+     "text": "3. These experiences are structured",
+     "keys": {
+      "structured": "exp"
+     }
+    },
+    {
+     "text": "by ruling relations, or by external influences.",
+     "at": "reg",
+     "keys": {
+      "ruling relations,": "reg",
+      "external influences.": "ext"
+     }
+    }
+   ]
+  },
+  {
+   "id": "f4",
+   "text": "{n}Quatre : {pv}la prise en compte des points de vue situés, {exp}ou de l’expérience des personnes, {conf}permet de confronter les discours institutionnels, {amel}et éventuellement de les améliorer.",
+   "gapAfter": 0.9,
+   "subs": [
+    {
+     "text": "4. Taking situated standpoints into account,",
+     "keys": {
+      "situated standpoints": "pv"
+     }
+    },
+    {
+     "text": "or people’s experience,",
+     "at": "exp"
+    },
+    {
+     "text": "makes it possible to confront institutional discourse,",
+     "at": "conf",
+     "keys": {
+      "confront": "conf"
+     }
+    },
+    {
+     "text": "and possibly to improve it.",
+     "at": "amel",
+     "keys": {
+      "improve": "amel"
+     }
+    }
+   ]
+  },
+  {
+   "id": "r1",
+   "text": "{a}Même si l’ethnographie institutionnelle {soc}est une méthode sociologique, {b}plusieurs de ses outils {tr}peuvent se transposer {org}dans le domaine de la gestion des organisations.",
+   "gapAfter": 0.5,
+   "subs": [
+    {
+     "text": "Even though institutional ethnography is a sociological method,",
+     "keys": {
+      "sociological method,": "soc"
+     }
+    },
+    {
+     "text": "several of its tools can be transferred",
+     "at": "b",
+     "keys": {
+      "transferred": "tr"
+     }
+    },
+    {
+     "text": "to the field of organizational management.",
+     "at": "org",
+     "keys": {
+      "organizational management.": "org"
+     }
+    }
+   ]
+  },
+  {
+   "id": "r2",
+   "text": "{a}Voici {six}6 étapes pour l’appliquer dans votre organisation, {inc}en vue de la rendre plus inclusive.",
+   "gapAfter": 0.7,
+   "subs": [
+    {
+     "text": "Here are 6 steps to apply it in your organization,",
+     "keys": {
+      "6 steps": "six"
+     }
+    },
+    {
+     "text": "to make it more inclusive.",
+     "at": "inc",
+     "keys": {
+      "more inclusive.": "inc"
+     }
+    }
+   ]
+  },
+  {
+   "id": "k1",
+   "text": "{n}Un : {doc}documenter un problème {rap}rapporté par une ou plusieurs personnes.",
+   "gapAfter": 0.45,
+   "subs": [
+    {
+     "text": "1. Document a problem reported by one or more people.",
+     "keys": {
+      "Document": "doc",
+      "reported": "rap"
+     }
+    }
+   ]
+  },
+  {
+   "id": "k2",
+   "text": "{n}Deux : {rep}repérer et documenter {disc}le discours de l’organisation {same}sur le même problème.",
+   "gapAfter": 0.45,
+   "subs": [
+    {
+     "text": "2. Identify and document the organization’s discourse on the same problem.",
+     "keys": {
+      "Identify": "rep",
+      "organization’s discourse": "disc"
+     }
+    }
+   ]
+  },
+  {
+   "id": "k3",
+   "text": "{n}Trois : {an}analyser les forces exogènes, {lois}lois, {pol}politiques {proc}et procédures, {inf}qui influencent ce discours.",
+   "gapAfter": 0.45,
+   "subs": [
+    {
+     "text": "3. Analyze the external forces:",
+     "keys": {
+      "external forces:": "an"
+     }
+    },
+    {
+     "text": "laws, policies and procedures that shape this discourse.",
+     "at": "lois",
+     "keys": {
+      "laws,": "lois",
+      "policies": "pol",
+      "procedures": "proc"
+     }
+    }
+   ]
+  },
+  {
+   "id": "k4",
+   "text": "{n}Quatre : {an}analyser les impacts {exp}sur les expériences rapportées des personnes.",
+   "gapAfter": 0.45,
+   "subs": [
+    {
+     "text": "4. Analyze the impacts on people’s reported experiences.",
+     "keys": {
+      "impacts": "an",
+      "reported experiences.": "exp"
+     }
+    }
+   ]
+  },
+  {
+   "id": "k5",
+   "text": "{n}Cinq : {cmp}comparer les deux discours, {ind}point de vue individuel {vs}versus institutionnel.",
+   "gapAfter": 0.45,
+   "subs": [
+    {
+     "text": "5. Compare the two discourses:",
+     "keys": {
+      "Compare": "cmp"
+     }
+    },
+    {
+     "text": "individual versus institutional standpoint.",
+     "at": "ind",
+     "keys": {
+      "individual": "ind",
+      "institutional": "vs"
+     }
+    }
+   ]
+  },
+  {
+   "id": "k6",
+   "text": "{n}Six : {amel}apporter une amélioration {cad}au cadre institutionnel, {inc}pour le rendre plus sensible et inclusif {init}par rapport au problème initial.",
+   "gapAfter": 0.8,
+   "subs": [
+    {
+     "text": "6. Improve the institutional framework,",
+     "keys": {
+      "Improve": "amel",
+      "institutional framework,": "cad"
+     }
+    },
+    {
+     "text": "to make it more sensitive and inclusive regarding the initial problem.",
+     "at": "inc",
+     "keys": {
+      "sensitive and inclusive": "inc"
+     }
+    }
+   ]
+  },
+  {
+   "id": "z",
+   "text": "{a}Partir de l’expérience des gens, {b}suivre les textes, {c}puis changer le cadre.",
+   "gapAfter": 0.9,
+   "subs": [
+    {
+     "text": "Start from people’s experience, follow the texts, then change the framework.",
+     "keys": {
+      "people’s experience,": "a",
+      "follow the texts,": "b",
+      "change the framework.": "c"
+     }
+    }
+   ]
+  },
+  {
+   "id": "e",
+   "text": "{a}Pour en savoir plus, {b}voici l’ouvrage de référence.",
+   "subs": [
+    {
+     "text": "To learn more, here is the reference work.",
+     "keys": {
+      "reference work.": "b"
+     }
+    }
+   ]
+  }
+ ]
+}

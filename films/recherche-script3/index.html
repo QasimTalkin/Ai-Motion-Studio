@@ -1,0 +1,113 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>L’ethnographie institutionnelle</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<style>html,body{margin:0;background:#0F172A}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// Script 3 (2 min 39). Three testimonies in three voices, then the narrator (French TTS), English subtitles.
+// One object carries the film: the frame (le cadre) institutions draw around people with their texts.
+// A testimonies (whips) · P the question · S Dorothy Smith, the dive into a situated standpoint · EI + 4 assises
+// F1–F4 the foundations (carousel) · R tools → organization, 6 étapes · K the map, step by step · Z recap · E reference
+import { boot } from '/lib/stage.js';
+import { L, T, DUR } from './js/timing.js';
+import { P, CAM, sp, range, clamp, dotGrid, vignette, subtitles, BPM } from './js/kit.js';
+import { chapterA, chapterP } from './js/testimony.js';
+import { chapterS, chapterEI } from './js/smith.js';
+import { assise1, assise2, assise3, assise4 } from './js/assises.js';
+import { chapterR, chapterK, chapterZ } from './js/steps.js';
+import { ending } from './js/finale.js';
+
+const SUBS = Object.values(L).flatMap((l) => l.subs);
+const ASSISES = [assise1, assise2, assise3, assise4], FT = [T.F1, T.F2, T.F3, T.F4];
+
+function film(t, S) {
+  const { g, W, H, u } = S;
+  // the foundations slide past like pages
+  const car = sp(t - T.F2, CAM) + sp(t - T.F3, CAM) + sp(t - T.F4, CAM);
+  const lift = sp(t - T.P, [60, 16]) * (1 - sp(t - T.S, [60, 16]));
+  if (lift > 0.001) { g.fillStyle = P.bg2; g.globalAlpha = lift; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
+  dotGrid(S, car * W * 0.35, t * 9 * u);
+
+  if (t < T.P + 0.6) chapterA(t, S);
+  if (t >= T.P - 0.1 && t < T.S + 0.8) chapterP(t, S);
+  if (t >= T.S - 0.1 && t < L.s2.start + 0.5) chapterS(t, S);
+  if (t >= L.s2.start - 0.45 && t < T.F1 + 0.8) chapterEI(t, S);
+  if (t >= T.F1 && t < T.R + 0.9) {
+    const ex = clamp(sp(t - T.R, [140, 22])), inn = range(t, T.F1, T.F1 + 0.3);
+    g.save(); g.globalAlpha = inn * (1 - ex); g.translate(0, -ex * 220 * u);
+    ASSISES.forEach((fn, k) => {
+      const off = (k - car) * W;
+      if (Math.abs(off) >= W * 0.999 || t < FT[k] - 0.6) return;
+      g.save(); g.translate(off, 0); fn(t, S); g.restore();
+    });
+    g.restore();
+  }
+  if (t >= T.R - 0.1 && t < T.K + 0.8) chapterR(t, S);
+  if (t >= T.K && t < T.Z + 0.8) chapterK(t, S);
+  if (t >= T.Z && t < T.E + 0.8) chapterZ(t, S);
+  if (t >= T.E) ending(t, S);
+
+  vignette(S);
+  subtitles(t, S, SUBS);
+  const fade = range(t, T.FADE, DUR);
+  if (fade > 0) { g.fillStyle = `rgba(0,0,0,${fade})`; g.fillRect(0, 0, W, H); }
+}
+
+// ── sound: SFX on the spoken words; the score ducks under the voice ─────────
+const c = (t, type, gain = 0.5) => ({ t, type, gain });
+const { t1, t2, t3, p, s1, sx, s2, s3, f1, f1x, f2, f3, f4, r1, r2, k1, k2, k3, k4, k5, k6, z, e } = L;
+const typing = (t0, n, cps, gain = 0.2) => Array.from({ length: Math.ceil(n / 2) }, (_, j) => c(t0 + (j * 2) / cps, 'type', gain));
+const ticks = (t0, n, dt, gain = 0.4, type = 'tick') => Array.from({ length: n }, (_, j) => c(t0 + j * dt, type, gain));
+const cues = [
+  // testimonies
+  c(0, 'thump', 0.45), c(0.02, 'swipe', 0.3), c(t1.start + 0.5, 'impact', 0.7), c(t1.start + 0.52, 'thump', 0.5), c(t1.start + 0.9, 'swipe', 0.35),
+  ...ticks(t1.start + 1.35, 7, 0.2, 0.4), ...[2.55, 2.9, 3.25, 3.5].flatMap((dt) => [c(t1.start + dt, 'pop', 0.3), c(t1.start + dt + 0.28, 'click', 0.4)]),
+  c(T.A2, 'whoosh', 0.6), ...ticks(t2.start - 0.5, 3, 0.1, 0.35), c(t2.start + 0.6, 'swipe', 0.4), c(t2.start + 1.7, 'impact', 0.6), c(t2.start + 1.72, 'click', 0.6),
+  c(t2.start + 2.3, 'swipe', 0.4), c(t2.start + 2.95, 'pop', 0.45),
+  c(T.A3, 'whoosh', 0.6), ...ticks(t3.start - 0.3, 3, 0.1, 0.35, 'pop'), ...[0, 1, 2, 3].flatMap((i) => [c(t3.start + 0.35 + i * 0.5, 'pop', 0.35), c(t3.start + 0.8 + i * 0.5, 'glitch', 0.3)]),
+  ...ticks(t3.start + 1.9, 3, 0.12, 0.4),
+  // the question
+  c(T.P, 'whoosh', 0.55), ...ticks(T.P + 0.15, 3, 0.12, 0.5, 'thump'), c(p.marks.emo, 'swipe', 0.4), c(p.marks.exi, 'impact', 0.7),
+  // Dorothy Smith
+  c(T.S, 'whoosh', 0.5), c(s1.marks.ds, 'pop', 0.45), ...typing(s1.marks.ds + 0.2, 33, 40), ...ticks(s1.marks.inst - 0.3, 12, 0.05, 0.3),
+  c(s1.marks.neg, 'swipe', 0.4), c(s1.marks.exp, 'chime', 0.25), c(T.DIVE + 0.9, 'riser', 0.35), c(T.DIVE + 0.95, 'whoosh', 0.6), c(s1.marks.pv + 0.2, 'pop', 0.5),
+  c(s1.marks.rel, 'swipe', 0.4), c(sx.marks.a, 'swipe', 0.35), ...[0, 1, 2, 3].map((i) => c(sx.marks.b + 0.2 + i * 0.3, 'pop', 0.4)),
+  c(sx.marks.loc - 0.1, 'whoosh', 0.45), c(sx.marks.work, 'tick', 0.5),
+  c(s2.marks.b, 'swipe', 0.4), ...ticks(s2.marks.disc, 4, 0.18, 0.4), c(s2.marks.c + 0.1, 'impact', 0.55), c(T.EI, 'whoosh', 0.5), ...ticks(s2.marks.ei - 0.25, 14, 0.06, 0.3, 'type'), c(s2.marks.ei + 0.7, 'impact', 0.6),
+  ...ticks(s3.marks.four - 0.3, 2, 0.25, 0.55), c(s3.marks.four, 'impact', 0.55), ...ticks(s3.marks.four + 0.25, 4, 0.16, 0.45, 'thump'),
+  // the four foundations
+  c(T.F1, 'whoosh', 0.6), c(f1.marks.txt, 'impact', 0.6), c(f1.marks.pow, 'swipe', 0.35), c(f1.marks.ind, 'click', 0.5), c(f1.marks.conf, 'whoosh', 0.45), c(f1.marks.conf + 0.8, 'click', 0.55),
+  ...['a', 'b', 'c'].map((k) => c(f1x.marks[k], 'swipe', 0.4)), ...ticks(f1x.marks.d, 9, 0.05, 0.35, 'pop'), ...ticks(f1x.marks.same, 9, 0.06, 0.3),
+  ...[0.25, 1.25].map((dt) => c(f1x.marks.act + dt, 'click', 0.6)),
+  c(T.F2, 'whoosh', 0.6), ...ticks(T.F2 + 0.25, 7, 0.08, 0.35), ...[0, 1, 2, 3].map((i) => c(f2.marks.sav - 0.1 + i * 0.15, 'pop', 0.45)), c(f2.marks.org, 'swipe', 0.4), c(f2.marks.esp, 'chime', 0.22),
+  c(T.F3, 'whoosh', 0.6), ...ticks(f3.marks.exp - 0.1, 9, 0.06, 0.35, 'pop'), ...ticks(f3.marks.reg - 0.15, 3, 0.12, 0.45, 'thump'), c(f3.marks.reg + 0.2, 'swipe', 0.45), ...ticks(f3.marks.ext - 0.1, 3, 0.12, 0.45, 'pop'),
+  c(T.F4, 'whoosh', 0.6), c(f4.marks.pv - 0.2, 'swipe', 0.4), ...typing(f4.marks.exp, 30, 18, 0.2), ...ticks(f4.marks.conf + 0.25, 4, 0.22, 0.5, 'click'),
+  ...typing(f4.marks.amel + 0.15, 20, 24, 0.22), c(f4.marks.amel + 0.9, 'chime', 0.25),
+  // toward organizations
+  c(T.R, 'whoosh', 0.6), c(r1.marks.soc - 0.6, 'pop', 0.4), ...ticks(r1.marks.b, 4, 0.08, 0.4), ...ticks(r1.marks.tr, 4, 0.12, 0.4, 'swipe'), c(r1.marks.org, 'chime', 0.25),
+  c(T.SIX, 'whoosh', 0.55), ...ticks(r2.marks.six - 0.35, 2, 0.25, 0.55), c(r2.marks.six, 'impact', 0.6), ...ticks(r2.marks.six + 0.3, 6, 0.1, 0.4, 'pop'), ...typing(r2.marks.inc - 0.4, 36, 40),
+  // the map
+  ...[k1, k2, k3, k4, k5, k6].map((l) => c(l.start - 0.5, 'whoosh', 0.45)),
+  c(k1.marks.doc - 0.2, 'pop', 0.5), ...typing(k1.marks.rap - 0.1, 30, 30), c(k2.marks.disc - 0.25, 'thump', 0.5), c(k2.marks.same, 'swipe', 0.4),
+  ...['lois', 'pol', 'proc'].map((k) => c(k3.marks[k] - 0.1, 'pop', 0.45)), ...ticks(k3.marks.inf, 3, 0.12, 0.4, 'swipe'),
+  c(k4.marks.an - 0.1, 'swipe', 0.45), ...[0, 0.25, 0.5].map((dt) => c(k4.marks.exp - 0.2 + dt, 'pop', 0.45)),
+  c(k5.marks.cmp - 0.1, 'whoosh', 0.5), c(k5.marks.vs, 'impact', 0.6),
+  ...typing(k6.marks.amel, 40, 40, 0.2), c(k6.marks.cad, 'swipe', 0.45), c(k6.marks.cad + 0.3, 'whoosh', 0.4), c(k6.marks.init, 'chime', 0.28), c(k6.marks.amel + 0.7, 'pop', 0.4),
+  // recap
+  c(T.Z, 'whoosh', 0.5), ...ticks(T.Z + 0.1, 3, 0.1, 0.4, 'pop'), ...ticks(z.marks.b - 0.1, 3, 0.12, 0.4, 'swipe'), c(z.marks.c, 'whoosh', 0.45),
+  ...ticks(z.marks.c + 0.5, 3, 0.12, 0.45, 'pop'), c(z.marks.c + 0.9, 'chime', 0.28),
+  // reference
+  c(T.E, 'whoosh', 0.55), c(e.marks.a, 'swipe', 0.4), ...typing(e.marks.a + 0.4, 29, 36), c(e.marks.b, 'pop', 0.45), c(e.end + 1.2, 'swipe', 0.3), c(e.end + 1.6, 'chime', 0.22),
+];
+
+boot({
+  title: 'L’ethnographie institutionnelle', dur: DUR, bpm: BPM, formats: ['9:16', '16:9'], palette: P, background: P.bg,
+  music: { style: 'minimal', key: 'A', seed: 9, intro: 1, breaks: [9, 45], volume: 0.3 },
+  voice: { file: 'audio/voice.wav', volume: 1 },
+  sfxVolume: 0.5,
+  cues,
+  poster: 139.4,
+  draw: film,
+});
+</script>

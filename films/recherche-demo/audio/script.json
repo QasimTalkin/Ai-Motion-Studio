@@ -1,0 +1,29 @@
+{
+  "voice": { "languageCode": "fr-FR", "name": "fr-FR-Neural2-B", "speakingRate": 0.95, "pitch": -1.0,
+             "effectsProfileId": ["large-home-entertainment-class-device"] },
+  "bpm": 120,
+  "tail": 2.2,
+  "lines": [
+    { "id": "s3-solution", "at": 0.5,
+      "text": "Voici {five}5 questions posées par les chercheurs {before}avant d’aboutir à de telles conclusions. {each}Chacune constitue le début d’une étape {emp}de la recherche empirique.",
+      "subs": [
+        { "text": "Here are 5 questions researchers ask first.", "at": 0, "keys": { "5 questions": "five" } },
+        { "text": "Each is the beginning of a stage in empirical research.", "at": "each", "keys": { "empirical research": "emp" } }
+      ] },
+    { "id": "s4-problematique", "at": 9.0,
+      "text": "{n}Un : {q}Quel est le problème, {scope}sa délimitation, {rel}sa pertinence ?",
+      "subs": [ { "text": "1. What is the problem, its scope, and its relevance?", "keys": { "scope": "scope", "relevance": "rel" } } ] },
+    { "id": "s5-cadre", "at": 14.0,
+      "text": "{n}Deux : {q}Avec quelle {lens}lunette {study}doit-on l’étudier ?",
+      "subs": [ { "text": "2. Through what lens should we study it?", "keys": { "lens": "lens" } } ] },
+    { "id": "s6-methodo", "at": 17.5,
+      "text": "{n}Trois : {q}Comment {cond}et dans quelles conditions {an}doit-on l’analyser ?",
+      "subs": [ { "text": "3. How and under what conditions should we analyze it?", "keys": { "How": "q", "conditions": "cond", "analyze": "an" } } ] },
+    { "id": "s7-resultats", "at": 21.0,
+      "text": "{n}Quatre : {q}Qu’est-ce qu’on a {found}trouvé ?",
+      "subs": [ { "text": "4. What did we find?", "keys": { "find": "found" } } ] },
+    { "id": "s8-discussion", "at": 24.0,
+      "text": "{n}Cinq : {q}Que dit la recherche {res}sur ces résultats {ded}et qu’on peut en déduire ?",
+      "subs": [ { "text": "5. What does the research say, and what can we deduce?", "keys": { "research": "q", "deduce": "ded" } } ] }
+  ]
+}

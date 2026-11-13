@@ -1,0 +1,16 @@
+{
+  "voice": { "languageCode": "fr-FR", "name": "fr-FR-Neural2-B", "speakingRate": 0.95, "pitch": -1.0,
+             "effectsProfileId": ["large-home-entertainment-class-device"] },
+  "lead": 0.6,
+  "gap": 0.7,
+  "lines": [
+    { "id": "s1-amorce", "text": "{intro}On a découvert que : {a}L’école ne contribue pas seulement à l’ascension sociale, mais aussi à la discrimination ; {b}Les enfants réussissent mieux à l’école quand les parents sont très scolarisés ; {c}Les institutions ont tendance à négliger les expériences des groupes minoritaires." },
+    { "id": "s2-probleme", "text": "{a}Des affirmations intéressantes, {b}alors comment les scientifiques font-ils pour effectuer des recherches leur permettant d’arriver à ces affirmations ?" },
+    { "id": "s3-solution", "text": "Voici {five}5 questions posées par les chercheurs {before}avant d’aboutir à de telles conclusions. {each}Chacune constitue le début d’une étape {emp}de la recherche empirique." },
+    { "id": "s4-problematique", "text": "{n}Un : {q}Quel est le problème, {scope}sa délimitation, {rel}sa pertinence ?" },
+    { "id": "s5-cadre", "text": "{n}Deux : {q}Avec quelle lunette {study}doit-on l’étudier ?" },
+    { "id": "s6-methodo", "text": "{n}Trois : {q}Comment {cond}et dans quelles conditions {an}doit-on l’analyser ?" },
+    { "id": "s7-resultats", "text": "{n}Quatre : {q}Qu’est-ce qu’on a {found}trouvé ?" },
+    { "id": "s8-discussion", "text": "{n}Cinq : {q}Que dit la recherche {res}sur ces résultats {ded}et qu’on peut en déduire ?" }
+  ]
+}

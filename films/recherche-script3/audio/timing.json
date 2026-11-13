@@ -1,0 +1,926 @@
+{
+ "voice": "fr-FR-Neural2-B",
+ "bpm": 120,
+ "dur": 149.876,
+ "lines": [
+  {
+   "id": "t1",
+   "index": 0,
+   "start": 1,
+   "end": 5.24,
+   "dur": 4.24,
+   "marks": {},
+   "subs": [
+    {
+     "text": "“I failed the exam…",
+     "from": 1,
+     "to": 2.27,
+     "keys": [
+      {
+       "text": "failed",
+       "t": 1.55
+      }
+     ]
+    },
+    {
+     "text": "because I was busy with the kids at home.”",
+     "from": 2.27,
+     "to": 5.49,
+     "keys": [
+      {
+       "text": "kids",
+       "t": 3.75
+      },
+      {
+       "text": "home.”",
+       "t": 4.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "index": 1,
+   "start": 6,
+   "end": 9.68,
+   "dur": 3.68,
+   "marks": {},
+   "subs": [
+    {
+     "text": "“I can’t provide this document…",
+     "from": 6,
+     "to": 8.33,
+     "keys": [
+      {
+       "text": "document…",
+       "t": 7.75
+      }
+     ]
+    },
+    {
+     "text": "because I didn’t study here.”",
+     "from": 8.33,
+     "to": 9.93,
+     "keys": [
+      {
+       "text": "here.”",
+       "t": 9.05
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "index": 2,
+   "start": 10.5,
+   "end": 14.02,
+   "dur": 3.52,
+   "marks": {},
+   "subs": [
+    {
+     "text": "“I feel like my managers",
+     "from": 10.5,
+     "to": 11.76,
+     "keys": [
+      {
+       "text": "feel",
+       "t": 11.1
+      }
+     ]
+    },
+    {
+     "text": "don’t understand me.”",
+     "from": 11.76,
+     "to": 14.27,
+     "keys": [
+      {
+       "text": "understand",
+       "t": 12.4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "p",
+   "index": 3,
+   "start": 15,
+   "end": 19.464,
+   "dur": 4.464,
+   "marks": {
+    "a": 15.015,
+    "emo": 15.566,
+    "b": 16.301,
+    "exi": 17.299
+   },
+   "subs": [
+    {
+     "text": "Why do I feel these emotions",
+     "from": 15,
+     "to": 16.301,
+     "keys": [
+      {
+       "text": "emotions",
+       "t": 15.566
+      }
+     ]
+    },
+    {
+     "text": "and fail to meet institutional requirements?",
+     "from": 16.301,
+     "to": 19.714,
+     "keys": [
+      {
+       "text": "institutional requirements?",
+       "t": 17.299
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s1",
+   "index": 4,
+   "start": 20.5,
+   "end": 32.079,
+   "dur": 11.579,
+   "marks": {
+    "a": 20.515,
+    "ds": 20.68,
+    "b": 21.706,
+    "inst": 22.873,
+    "neg": 25.3,
+    "exp": 26.322,
+    "pv": 27.789,
+    "c": 29.358,
+    "rel": 30.363
+   },
+   "subs": [
+    {
+     "text": "For Dorothy Smith, the problem comes from the fact",
+     "from": 20.5,
+     "to": 22.873,
+     "keys": [
+      {
+       "text": "Dorothy Smith,",
+       "t": 20.68
+      }
+     ]
+    },
+    {
+     "text": "that institutions, or organizations,",
+     "from": 22.873,
+     "to": 25.3,
+     "keys": []
+    },
+    {
+     "text": "tend to neglect the personal experiences,",
+     "from": 25.3,
+     "to": 27.789,
+     "keys": [
+      {
+       "text": "neglect",
+       "t": 25.3
+      },
+      {
+       "text": "personal experiences,",
+       "t": 26.322
+      }
+     ]
+    },
+    {
+     "text": "or the “situated standpoint”, of certain people",
+     "from": 27.789,
+     "to": 30.363,
+     "keys": [
+      {
+       "text": "“situated standpoint”,",
+       "t": 27.789
+      }
+     ]
+    },
+    {
+     "text": "in their relationship with them.",
+     "from": 30.363,
+     "to": 32.329,
+     "keys": []
+    }
+   ]
+  },
+  {
+   "id": "sx",
+   "index": 5,
+   "start": 33,
+   "end": 39,
+   "dur": 6,
+   "marks": {
+    "a": 33.015,
+    "b": 34.191,
+    "exp": 35.119,
+    "loc": 37.209,
+    "work": 37.746
+   },
+   "subs": [
+    {
+     "text": "The situated standpoint is knowledge",
+     "from": 33,
+     "to": 35.119,
+     "keys": [
+      {
+       "text": "situated standpoint",
+       "t": 33.015
+      }
+     ]
+    },
+    {
+     "text": "that comes from a person’s concrete experience,",
+     "from": 35.119,
+     "to": 37.209,
+     "keys": [
+      {
+       "text": "concrete experience,",
+       "t": 35.119
+      }
+     ]
+    },
+    {
+     "text": "where they live and work.",
+     "from": 37.209,
+     "to": 39.25,
+     "keys": [
+      {
+       "text": "live",
+       "t": 37.209
+      },
+      {
+       "text": "work.",
+       "t": 37.746
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s2",
+   "index": 6,
+   "start": 40,
+   "end": 48.889,
+   "dur": 8.889,
+   "marks": {
+    "a": 40.015,
+    "b": 41.136,
+    "disc": 42.84,
+    "c": 44.558,
+    "ei": 45.989
+   },
+   "subs": [
+    {
+     "text": "As an alternative, she proposes to study this relationship,",
+     "from": 40,
+     "to": 42.84,
+     "keys": [
+      {
+       "text": "she proposes",
+       "t": 41.136
+      }
+     ]
+    },
+    {
+     "text": "or this institutional discourse,",
+     "from": 42.84,
+     "to": 44.558,
+     "keys": [
+      {
+       "text": "institutional discourse,",
+       "t": 42.84
+      }
+     ]
+    },
+    {
+     "text": "with an original method known as institutional ethnography.",
+     "from": 44.558,
+     "to": 49.139,
+     "keys": [
+      {
+       "text": "institutional ethnography.",
+       "t": 45.989
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s3",
+   "index": 7,
+   "start": 49.5,
+   "end": 51.847,
+   "dur": 2.347,
+   "marks": {
+    "a": 49.515,
+    "four": 49.936,
+    "m": 50.823
+   },
+   "subs": [
+    {
+     "text": "Here are the main foundations of her method.",
+     "from": 49.5,
+     "to": 52.097,
+     "keys": [
+      {
+       "text": "main foundations",
+       "t": 49.936
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "f1",
+   "index": 8,
+   "start": 52.5,
+   "end": 59.29,
+   "dur": 6.79,
+   "marks": {
+    "n": 52.515,
+    "txt": 52.986,
+    "pow": 54.373,
+    "ind": 55.8,
+    "conf": 56.766
+   },
+   "subs": [
+    {
+     "text": "1. Institutional texts exert a form of power",
+     "from": 52.5,
+     "to": 55.8,
+     "keys": [
+      {
+       "text": "Institutional texts",
+       "t": 52.986
+      },
+      {
+       "text": "power",
+       "t": 54.373
+      }
+     ]
+    },
+    {
+     "text": "over individuals, who have no choice but to conform.",
+     "from": 55.8,
+     "to": 59.54,
+     "keys": [
+      {
+       "text": "conform.",
+       "t": 56.766
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "f1x",
+   "index": 9,
+   "start": 60,
+   "end": 66.805,
+   "dur": 6.805,
+   "marks": {
+    "a": 60.015,
+    "b": 60.857,
+    "c": 62.085,
+    "d": 63.586,
+    "same": 64.176,
+    "act": 65.361
+   },
+   "subs": [
+    {
+     "text": "A form, exam regulations, a hiring policy:",
+     "from": 60,
+     "to": 63.586,
+     "keys": [
+      {
+       "text": "form,",
+       "t": 60.015
+      },
+      {
+       "text": "exam regulations,",
+       "t": 60.857
+      },
+      {
+       "text": "hiring policy:",
+       "t": 62.085
+      }
+     ]
+    },
+    {
+     "text": "everywhere, the same texts coordinate what people do.",
+     "from": 63.586,
+     "to": 67.055,
+     "keys": [
+      {
+       "text": "same texts",
+       "t": 64.176
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "f2",
+   "index": 10,
+   "start": 67.5,
+   "end": 73.713,
+   "dur": 6.213,
+   "marks": {
+    "n": 67.515,
+    "sav": 68.03,
+    "org": 69.929,
+    "esp": 71.276
+   },
+   "subs": [
+    {
+     "text": "2. Knowledge is locally situated,",
+     "from": 67.5,
+     "to": 69.929,
+     "keys": [
+      {
+       "text": "locally situated,",
+       "t": 68.03
+      }
+     ]
+    },
+    {
+     "text": "and organized through texts within institutional spaces.",
+     "from": 69.929,
+     "to": 73.963,
+     "keys": [
+      {
+       "text": "through texts",
+       "t": 69.929
+      },
+      {
+       "text": "institutional spaces.",
+       "t": 71.276
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "f3",
+   "index": 11,
+   "start": 74.5,
+   "end": 80.345,
+   "dur": 5.845,
+   "marks": {
+    "n": 74.515,
+    "exp": 75.076,
+    "reg": 76.612,
+    "ext": 78.177
+   },
+   "subs": [
+    {
+     "text": "3. These experiences are structured",
+     "from": 74.5,
+     "to": 76.612,
+     "keys": [
+      {
+       "text": "structured",
+       "t": 75.076
+      }
+     ]
+    },
+    {
+     "text": "by ruling relations, or by external influences.",
+     "from": 76.612,
+     "to": 80.595,
+     "keys": [
+      {
+       "text": "ruling relations,",
+       "t": 76.612
+      },
+      {
+       "text": "external influences.",
+       "t": 78.177
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "f4",
+   "index": 12,
+   "start": 81,
+   "end": 89.807,
+   "dur": 8.807,
+   "marks": {
+    "n": 81.015,
+    "pv": 81.536,
+    "exp": 83.595,
+    "conf": 85.245,
+    "amel": 87.69
+   },
+   "subs": [
+    {
+     "text": "4. Taking situated standpoints into account,",
+     "from": 81,
+     "to": 83.595,
+     "keys": [
+      {
+       "text": "situated standpoints",
+       "t": 81.536
+      }
+     ]
+    },
+    {
+     "text": "or people’s experience,",
+     "from": 83.595,
+     "to": 85.245,
+     "keys": []
+    },
+    {
+     "text": "makes it possible to confront institutional discourse,",
+     "from": 85.245,
+     "to": 87.69,
+     "keys": [
+      {
+       "text": "confront",
+       "t": 85.245
+      }
+     ]
+    },
+    {
+     "text": "and possibly to improve it.",
+     "from": 87.69,
+     "to": 90.057,
+     "keys": [
+      {
+       "text": "improve",
+       "t": 87.69
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "r1",
+   "index": 13,
+   "start": 91,
+   "end": 99.007,
+   "dur": 8.007,
+   "marks": {
+    "a": 91.015,
+    "soc": 92.833,
+    "b": 94.385,
+    "tr": 95.301,
+    "org": 96.238
+   },
+   "subs": [
+    {
+     "text": "Even though institutional ethnography is a sociological method,",
+     "from": 91,
+     "to": 94.385,
+     "keys": [
+      {
+       "text": "sociological method,",
+       "t": 92.833
+      }
+     ]
+    },
+    {
+     "text": "several of its tools can be transferred",
+     "from": 94.385,
+     "to": 96.238,
+     "keys": [
+      {
+       "text": "transferred",
+       "t": 95.301
+      }
+     ]
+    },
+    {
+     "text": "to the field of organizational management.",
+     "from": 96.238,
+     "to": 99.257,
+     "keys": [
+      {
+       "text": "organizational management.",
+       "t": 96.238
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "r2",
+   "index": 14,
+   "start": 100,
+   "end": 104.996,
+   "dur": 4.996,
+   "marks": {
+    "a": 100.015,
+    "six": 100.35,
+    "inc": 102.772
+   },
+   "subs": [
+    {
+     "text": "Here are 6 steps to apply it in your organization,",
+     "from": 100,
+     "to": 102.772,
+     "keys": [
+      {
+       "text": "6 steps",
+       "t": 100.35
+      }
+     ]
+    },
+    {
+     "text": "to make it more inclusive.",
+     "from": 102.772,
+     "to": 105.246,
+     "keys": [
+      {
+       "text": "more inclusive.",
+       "t": 102.772
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k1",
+   "index": 15,
+   "start": 106,
+   "end": 109.691,
+   "dur": 3.691,
+   "marks": {
+    "n": 106.015,
+    "doc": 106.481,
+    "rap": 107.613
+   },
+   "subs": [
+    {
+     "text": "1. Document a problem reported by one or more people.",
+     "from": 106,
+     "to": 109.941,
+     "keys": [
+      {
+       "text": "Document",
+       "t": 106.481
+      },
+      {
+       "text": "reported",
+       "t": 107.613
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k2",
+   "index": 16,
+   "start": 110.5,
+   "end": 115.276,
+   "dur": 4.776,
+   "marks": {
+    "n": 110.515,
+    "rep": 111.088,
+    "disc": 112.205,
+    "same": 113.647
+   },
+   "subs": [
+    {
+     "text": "2. Identify and document the organization’s discourse on the same problem.",
+     "from": 110.5,
+     "to": 115.526,
+     "keys": [
+      {
+       "text": "Identify",
+       "t": 111.088
+      },
+      {
+       "text": "organization’s discourse",
+       "t": 112.205
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k3",
+   "index": 17,
+   "start": 116,
+   "end": 122.19,
+   "dur": 6.19,
+   "marks": {
+    "n": 116.015,
+    "an": 116.56,
+    "lois": 118.336,
+    "pol": 118.781,
+    "proc": 119.335,
+    "inf": 120.275
+   },
+   "subs": [
+    {
+     "text": "3. Analyze the external forces:",
+     "from": 116,
+     "to": 118.336,
+     "keys": [
+      {
+       "text": "external forces:",
+       "t": 116.56
+      }
+     ]
+    },
+    {
+     "text": "laws, policies and procedures that shape this discourse.",
+     "from": 118.336,
+     "to": 122.44,
+     "keys": [
+      {
+       "text": "laws,",
+       "t": 118.336
+      },
+      {
+       "text": "policies",
+       "t": 118.781
+      },
+      {
+       "text": "procedures",
+       "t": 119.335
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k4",
+   "index": 18,
+   "start": 123,
+   "end": 126.933,
+   "dur": 3.933,
+   "marks": {
+    "n": 123.015,
+    "an": 123.61,
+    "exp": 124.652
+   },
+   "subs": [
+    {
+     "text": "4. Analyze the impacts on people’s reported experiences.",
+     "from": 123,
+     "to": 127.183,
+     "keys": [
+      {
+       "text": "impacts",
+       "t": 123.61
+      },
+      {
+       "text": "reported experiences.",
+       "t": 124.652
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k5",
+   "index": 19,
+   "start": 127.5,
+   "end": 132.444,
+   "dur": 4.944,
+   "marks": {
+    "n": 127.515,
+    "cmp": 128.118,
+    "ind": 129.529,
+    "vs": 130.51
+   },
+   "subs": [
+    {
+     "text": "5. Compare the two discourses:",
+     "from": 127.5,
+     "to": 129.529,
+     "keys": [
+      {
+       "text": "Compare",
+       "t": 128.118
+      }
+     ]
+    },
+    {
+     "text": "individual versus institutional standpoint.",
+     "from": 129.529,
+     "to": 132.694,
+     "keys": [
+      {
+       "text": "individual",
+       "t": 129.529
+      },
+      {
+       "text": "institutional",
+       "t": 130.51
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k6",
+   "index": 20,
+   "start": 133,
+   "end": 140.328,
+   "dur": 7.328,
+   "marks": {
+    "n": 133.015,
+    "amel": 133.64,
+    "cad": 134.867,
+    "inc": 136.26,
+    "init": 138.137
+   },
+   "subs": [
+    {
+     "text": "6. Improve the institutional framework,",
+     "from": 133,
+     "to": 136.26,
+     "keys": [
+      {
+       "text": "Improve",
+       "t": 133.64
+      },
+      {
+       "text": "institutional framework,",
+       "t": 134.867
+      }
+     ]
+    },
+    {
+     "text": "to make it more sensitive and inclusive regarding the initial problem.",
+     "from": 136.26,
+     "to": 140.578,
+     "keys": [
+      {
+       "text": "sensitive and inclusive",
+       "t": 136.26
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "z",
+   "index": 21,
+   "start": 141.5,
+   "end": 145.974,
+   "dur": 4.474,
+   "marks": {
+    "a": 141.515,
+    "b": 143.174,
+    "c": 144.289
+   },
+   "subs": [
+    {
+     "text": "Start from people’s experience, follow the texts, then change the framework.",
+     "from": 141.5,
+     "to": 146.224,
+     "keys": [
+      {
+       "text": "people’s experience,",
+       "t": 141.515
+      },
+      {
+       "text": "follow the texts,",
+       "t": 143.174
+      },
+      {
+       "text": "change the framework.",
+       "t": 144.289
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "e",
+   "index": 22,
+   "start": 147,
+   "end": 149.876,
+   "dur": 2.876,
+   "marks": {
+    "a": 147.015,
+    "b": 148.114
+   },
+   "subs": [
+    {
+     "text": "To learn more, here is the reference work.",
+     "from": 147,
+     "to": 150.126,
+     "keys": [
+      {
+       "text": "reference work.",
+       "t": 148.114
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

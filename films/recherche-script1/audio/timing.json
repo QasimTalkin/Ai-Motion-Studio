@@ -1,0 +1,804 @@
+{
+ "voice": "fr-FR-Neural2-B",
+ "bpm": 120,
+ "dur": 134.621,
+ "lines": [
+  {
+   "id": "a0",
+   "index": 0,
+   "start": 1,
+   "end": 2.13,
+   "dur": 1.13,
+   "marks": {
+    "a": 1.015
+   },
+   "subs": [
+    {
+     "text": "We discovered that:",
+     "from": 1,
+     "to": 2.38,
+     "keys": []
+    }
+   ]
+  },
+  {
+   "id": "a1",
+   "index": 1,
+   "start": 2.5,
+   "end": 7.338,
+   "dur": 4.838,
+   "marks": {
+    "a": 2.515,
+    "asc": 4.044,
+    "mais": 5.239,
+    "disc": 5.739
+   },
+   "subs": [
+    {
+     "text": "School contributes not only to social mobility,",
+     "from": 2.5,
+     "to": 5.239,
+     "keys": [
+      {
+       "text": "social mobility",
+       "t": 4.044
+      }
+     ]
+    },
+    {
+     "text": "but also to discrimination.",
+     "from": 5.239,
+     "to": 7.588,
+     "keys": [
+      {
+       "text": "discrimination",
+       "t": 5.739
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "a2",
+   "index": 2,
+   "start": 8,
+   "end": 13.458,
+   "dur": 5.458,
+   "marks": {
+    "a": 8.015,
+    "quand": 9.694,
+    "scol": 10.432,
+    "part": 11.241
+   },
+   "subs": [
+    {
+     "text": "Children do better at school",
+     "from": 8,
+     "to": 9.694,
+     "keys": []
+    },
+    {
+     "text": "when their parents are highly educated",
+     "from": 9.694,
+     "to": 11.241,
+     "keys": [
+      {
+       "text": "highly educated",
+       "t": 10.432
+      }
+     ]
+    },
+    {
+     "text": "and take part in their learning.",
+     "from": 11.241,
+     "to": 13.708,
+     "keys": [
+      {
+       "text": "take part",
+       "t": 11.241
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "a3",
+   "index": 3,
+   "start": 14.5,
+   "end": 20.415,
+   "dur": 5.915,
+   "marks": {
+    "a": 14.515,
+    "neg": 15.963,
+    "min": 17.204,
+    "maj": 18.225
+   },
+   "subs": [
+    {
+     "text": "Institutions tend to neglect the experiences",
+     "from": 14.5,
+     "to": 17.204,
+     "keys": [
+      {
+       "text": "neglect",
+       "t": 15.963
+      }
+     ]
+    },
+    {
+     "text": "of minority groups in favour of majority groups.",
+     "from": 17.204,
+     "to": 20.665,
+     "keys": [
+      {
+       "text": "minority",
+       "t": 17.204
+      },
+      {
+       "text": "majority",
+       "t": 18.225
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "p",
+   "index": 4,
+   "start": 21.5,
+   "end": 28.83,
+   "dur": 7.33,
+   "marks": {
+    "a": 21.515,
+    "b": 23.191,
+    "c": 25.088,
+    "d": 26.29
+   },
+   "subs": [
+    {
+     "text": "Interesting claims.",
+     "from": 21.5,
+     "to": 23.191,
+     "keys": []
+    },
+    {
+     "text": "So how do scientists conduct research",
+     "from": 23.191,
+     "to": 26.29,
+     "keys": []
+    },
+    {
+     "text": "that allows them to reach these claims?",
+     "from": 26.29,
+     "to": 29.08,
+     "keys": []
+    }
+   ]
+  },
+  {
+   "id": "s",
+   "index": 5,
+   "start": 30,
+   "end": 37.708,
+   "dur": 7.708,
+   "marks": {
+    "five": 30.34,
+    "before": 32.06,
+    "each": 34.418,
+    "emp": 36.225
+   },
+   "subs": [
+    {
+     "text": "Here are 5 questions researchers ask",
+     "from": 30,
+     "to": 32.06,
+     "keys": [
+      {
+       "text": "5 questions",
+       "t": 30.34
+      }
+     ]
+    },
+    {
+     "text": "before reaching such conclusions.",
+     "from": 32.06,
+     "to": 34.418,
+     "keys": []
+    },
+    {
+     "text": "Each one marks the start of a stage of empirical research.",
+     "from": 34.418,
+     "to": 37.958,
+     "keys": [
+      {
+       "text": "empirical research",
+       "t": 36.225
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q1",
+   "index": 6,
+   "start": 39,
+   "end": 43.269,
+   "dur": 4.269,
+   "marks": {
+    "n": 39.015,
+    "q": 39.536,
+    "scope": 40.609,
+    "rel": 41.776
+   },
+   "subs": [
+    {
+     "text": "1. What is the problem, its scope, its relevance?",
+     "from": 39,
+     "to": 43.519,
+     "keys": [
+      {
+       "text": "scope",
+       "t": 40.609
+      },
+      {
+       "text": "relevance",
+       "t": 41.776
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x1",
+   "index": 7,
+   "start": 44,
+   "end": 54.886,
+   "dur": 10.886,
+   "marks": {
+    "a": 44.015,
+    "b": 45.12,
+    "who": 46.095,
+    "where": 47.22,
+    "when": 47.884,
+    "c": 49.224,
+    "sci": 50.81,
+    "soc": 51.461,
+    "d": 52.4,
+    "rq": 53.065
+   },
+   "subs": [
+    {
+     "text": "It all starts with an observation.",
+     "from": 44,
+     "to": 45.12,
+     "keys": []
+    },
+    {
+     "text": "We narrow it down: which population, which place, which period.",
+     "from": 45.12,
+     "to": 49.224,
+     "keys": [
+      {
+       "text": "population",
+       "t": 46.095
+      },
+      {
+       "text": "place",
+       "t": 47.22
+      },
+      {
+       "text": "period",
+       "t": 47.884
+      }
+     ]
+    },
+    {
+     "text": "We justify its relevance, scientific and social.",
+     "from": 49.224,
+     "to": 52.4,
+     "keys": [
+      {
+       "text": "scientific",
+       "t": 50.81
+      },
+      {
+       "text": "social",
+       "t": 51.461
+      }
+     ]
+    },
+    {
+     "text": "And we arrive at a precise research question.",
+     "from": 52.4,
+     "to": 55.136,
+     "keys": [
+      {
+       "text": "research question",
+       "t": 53.065
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "index": 8,
+   "start": 56,
+   "end": 58.566,
+   "dur": 2.566,
+   "marks": {
+    "n": 56.015,
+    "q": 56.655,
+    "lens": 57.067,
+    "study": 57.402
+   },
+   "subs": [
+    {
+     "text": "2. Through what lens should we study it?",
+     "from": 56,
+     "to": 58.816,
+     "keys": [
+      {
+       "text": "lens",
+       "t": 57.067
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x2",
+   "index": 9,
+   "start": 59.5,
+   "end": 73.036,
+   "dur": 13.536,
+   "marks": {
+    "a": 59.515,
+    "b": 60.786,
+    "c": 62.007,
+    "d": 63.817,
+    "cap": 64.59,
+    "bour": 66,
+    "e": 66.944,
+    "her": 67.87,
+    "reu": 68.914,
+    "h": 70.665,
+    "hyp": 71.978
+   },
+   "subs": [
+    {
+     "text": "This is the theoretical framework:",
+     "from": 59.5,
+     "to": 60.786,
+     "keys": []
+    },
+    {
+     "text": "concepts and theories that guide how we look.",
+     "from": 60.786,
+     "to": 63.817,
+     "keys": []
+    },
+    {
+     "text": "For example, Bourdieu’s cultural capital",
+     "from": 63.817,
+     "to": 66.944,
+     "keys": [
+      {
+       "text": "cultural capital",
+       "t": 64.59
+      },
+      {
+       "text": "Bourdieu’s",
+       "t": 66
+      }
+     ]
+    },
+    {
+     "text": "sheds light on the link between family heritage and school success.",
+     "from": 66.944,
+     "to": 70.665,
+     "keys": [
+      {
+       "text": "family heritage",
+       "t": 67.87
+      },
+      {
+       "text": "school success",
+       "t": 68.914
+      }
+     ]
+    },
+    {
+     "text": "It also helps formulate hypotheses.",
+     "from": 70.665,
+     "to": 73.286,
+     "keys": [
+      {
+       "text": "hypotheses",
+       "t": 71.978
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q3",
+   "index": 10,
+   "start": 74.5,
+   "end": 77.492,
+   "dur": 2.992,
+   "marks": {
+    "n": 74.515,
+    "q": 75.117,
+    "cond": 75.432,
+    "an": 76.318
+   },
+   "subs": [
+    {
+     "text": "3. How, and under what conditions, should we analyze it?",
+     "from": 74.5,
+     "to": 77.742,
+     "keys": [
+      {
+       "text": "How",
+       "t": 75.117
+      },
+      {
+       "text": "conditions",
+       "t": 75.432
+      },
+      {
+       "text": "analyze",
+       "t": 76.318
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x3",
+   "index": 11,
+   "start": 78,
+   "end": 93.199,
+   "dur": 15.199,
+   "marks": {
+    "a": 78.015,
+    "b": 79.16,
+    "quanti": 79.646,
+    "q1": 80.523,
+    "quali": 82.583,
+    "q2": 83.556,
+    "mix": 85.693,
+    "c": 86.982,
+    "ech": 87.499,
+    "col": 88.359,
+    "ana": 89.636,
+    "eth": 90.607,
+    "cons": 91.635
+   },
+   "subs": [
+    {
+     "text": "This is the methodology.",
+     "from": 78,
+     "to": 79.16,
+     "keys": []
+    },
+    {
+     "text": "A quantitative approach, with questionnaires and statistics,",
+     "from": 79.16,
+     "to": 82.583,
+     "keys": [
+      {
+       "text": "quantitative",
+       "t": 79.646
+      }
+     ]
+    },
+    {
+     "text": "or a qualitative one, with interviews and observations, or both.",
+     "from": 82.583,
+     "to": 86.982,
+     "keys": [
+      {
+       "text": "qualitative",
+       "t": 82.583
+      },
+      {
+       "text": "or both",
+       "t": 85.693
+      }
+     ]
+    },
+    {
+     "text": "We specify the sample, the data collection tools,",
+     "from": 86.982,
+     "to": 89.636,
+     "keys": [
+      {
+       "text": "sample",
+       "t": 87.499
+      },
+      {
+       "text": "data collection",
+       "t": 88.359
+      }
+     ]
+    },
+    {
+     "text": "the analysis method, and ethical rules such as consent.",
+     "from": 89.636,
+     "to": 93.449,
+     "keys": [
+      {
+       "text": "analysis",
+       "t": 89.636
+      },
+      {
+       "text": "ethical",
+       "t": 90.607
+      },
+      {
+       "text": "consent",
+       "t": 91.635
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q4",
+   "index": 12,
+   "start": 94.5,
+   "end": 96.242,
+   "dur": 1.742,
+   "marks": {
+    "n": 94.515,
+    "q": 95.086,
+    "found": 95.5
+   },
+   "subs": [
+    {
+     "text": "4. What did we find?",
+     "from": 94.5,
+     "to": 96.492,
+     "keys": [
+      {
+       "text": "find",
+       "t": 95.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x4",
+   "index": 13,
+   "start": 97,
+   "end": 104.352,
+   "dur": 7.352,
+   "marks": {
+    "a": 97.015,
+    "b": 98.387,
+    "c": 99.294,
+    "tab": 101.017,
+    "gra": 101.744,
+    "cit": 102.589
+   },
+   "subs": [
+    {
+     "text": "Results present the data as they are,",
+     "from": 97,
+     "to": 99.294,
+     "keys": [
+      {
+       "text": "as they are",
+       "t": 98.387
+      }
+     ]
+    },
+    {
+     "text": "without interpreting them yet:",
+     "from": 99.294,
+     "to": 101.017,
+     "keys": []
+    },
+    {
+     "text": "tables, charts, interview excerpts.",
+     "from": 101.017,
+     "to": 104.602,
+     "keys": [
+      {
+       "text": "tables",
+       "t": 101.017
+      },
+      {
+       "text": "charts",
+       "t": 101.744
+      },
+      {
+       "text": "interview excerpts",
+       "t": 102.589
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q5",
+   "index": 14,
+   "start": 105.5,
+   "end": 109.401,
+   "dur": 3.901,
+   "marks": {
+    "n": 105.515,
+    "q": 106.08,
+    "res": 106.896,
+    "ded": 107.699
+   },
+   "subs": [
+    {
+     "text": "5. What does the research say about these results, and what can we deduce?",
+     "from": 105.5,
+     "to": 109.651,
+     "keys": [
+      {
+       "text": "research",
+       "t": 106.08
+      },
+      {
+       "text": "deduce",
+       "t": 107.699
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "x5",
+   "index": 15,
+   "start": 110,
+   "end": 117.556,
+   "dur": 7.556,
+   "marks": {
+    "a": 110.015,
+    "prev": 110.997,
+    "lim": 112.322,
+    "b": 113.719,
+    "fut": 115.071
+   },
+   "subs": [
+    {
+     "text": "We compare the results with previous studies,",
+     "from": 110,
+     "to": 112.322,
+     "keys": [
+      {
+       "text": "previous studies",
+       "t": 110.997
+      }
+     ]
+    },
+    {
+     "text": "we acknowledge their limitations,",
+     "from": 112.322,
+     "to": 113.719,
+     "keys": [
+      {
+       "text": "limitations",
+       "t": 112.322
+      }
+     ]
+    },
+    {
+     "text": "then draw conclusions and leads for future research.",
+     "from": 113.719,
+     "to": 117.806,
+     "keys": [
+      {
+       "text": "conclusions",
+       "t": 113.719
+      },
+      {
+       "text": "future research",
+       "t": 115.071
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "r",
+   "index": 16,
+   "start": 119,
+   "end": 127.812,
+   "dur": 8.812,
+   "marks": {
+    "a": 119.015,
+    "b": 119.932,
+    "c": 121.046,
+    "d": 122,
+    "e": 122.831,
+    "f": 123.957,
+    "g": 124.578,
+    "h": 126.242
+   },
+   "subs": [
+    {
+     "text": "Research problem, theoretical framework, methodology, results, discussion:",
+     "from": 119,
+     "to": 123.957,
+     "keys": [
+      {
+       "text": "Research problem",
+       "t": 119.015
+      },
+      {
+       "text": "theoretical framework",
+       "t": 119.932
+      },
+      {
+       "text": "methodology",
+       "t": 121.046
+      },
+      {
+       "text": "results",
+       "t": 122
+      },
+      {
+       "text": "discussion",
+       "t": 122.831
+      }
+     ]
+    },
+    {
+     "text": "this path is what leads to claims like the ones at the start.",
+     "from": 123.957,
+     "to": 128.062,
+     "keys": [
+      {
+       "text": "the ones at the start",
+       "t": 126.242
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "e",
+   "index": 17,
+   "start": 129,
+   "end": 134.621,
+   "dur": 5.621,
+   "marks": {
+    "a": 129.015,
+    "shs": 131.114,
+    "b": 132.68
+   },
+   "subs": [
+    {
+     "text": "To learn more about the stages of research",
+     "from": 129,
+     "to": 131.114,
+     "keys": [
+      {
+       "text": "stages of research",
+       "t": 129.015
+      }
+     ]
+    },
+    {
+     "text": "in the humanities and social sciences,",
+     "from": 131.114,
+     "to": 132.68,
+     "keys": []
+    },
+    {
+     "text": "here are a few references.",
+     "from": 132.68,
+     "to": 134.871,
+     "keys": []
+    }
+   ]
+  }
+ ]
+}

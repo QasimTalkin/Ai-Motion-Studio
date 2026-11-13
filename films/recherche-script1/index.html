@@ -1,0 +1,120 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Les 5 étapes de la recherche empirique</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<style>html,body{margin:0;background:#0F172A}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// Script 1, full film (2 min 24). French VO (Google TTS), English subtitles. Every cue reads audio/timing.json.
+// A  primer: three findings, each a card whose icon draws itself on the spoken words → chips
+// P  problem: chips get a "?", fall away; a giant "?" drops (bouncy); the question sweeps
+// S  solution: the "?" flies into the headline and rolls 1→5; five nodes; step names morph in
+// 1-5 the steps (match cut · pan · iris · push · morph), each explained with one running example
+// R  recap path; the primer's claims come back with a check   E  "Pour en savoir plus" + references
+import { boot } from '/lib/stage.js';
+import { L, T, DUR } from './js/timing.js';
+import { P, CAM, sp, spring, lerp, range, dotGrid, vignette, subtitles, lay, BPM } from './js/kit.js';
+import { chapterA, chapterP } from './js/amorce.js';
+import { chapterS, ROLL } from './js/solution.js';
+import { step1, step2, step3, step4, step5, lensPos, lensR, S5 } from './js/steps.js';
+import { recap, ending } from './js/finale.js';
+
+const SUBS = Object.values(L).flatMap((l) => l.subs);
+
+function film(t, S) {
+  const { g, W, H, u } = S;
+  const cX = W * sp(t - T.TP, CAM), cY = H * sp(t - T.TU, CAM);
+  // the problem phase lifts the background to a lighter blue, then returns to navy
+  const lift = sp(t - T.Q_DROP, [60, 16]) * (1 - sp(t - T.Q_TO_S, [60, 16]));
+  if (lift > 0.001) { g.fillStyle = P.bg2; g.globalAlpha = lift; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
+  dotGrid(S, cX, cY + t * 9 * u);
+
+  if (t < T.Q_DROP + 1.2) chapterA(t, S);
+  if (t >= T.Q_DROP && t < T.Q_TO_S + 0.6) chapterP(t, S);
+  if (t >= T.Q_TO_S + 0.45 && t < T.TX + 0.9) chapterS(t, S);
+  if (t >= T.TX && t < T.TP + 1.1) { g.save(); g.translate(-Math.min(cX, W), 0); step1(t, S); g.restore(); }
+
+  // lens iris: step 3 opens inside the lens of step 2
+  const [lx, ly] = lensPos(t, S);
+  const far = Math.max(Math.hypot(lx, ly), Math.hypot(W - lx, ly), Math.hypot(lx, H - ly), Math.hypot(W - lx, H - ly));
+  const iris = spring(t - T.TI, [80, 17]);
+  const R = lerp(lensR(T.TI, S), far * 1.06, iris);
+  const covered = t >= T.TI && R >= far;
+  if (t >= T.TP && !covered && t < T.TU) { g.save(); g.translate(W - cX, 0); step2(t, S); g.restore(); }
+  if (t >= T.TI && t < T.TU + 1.1) {
+    g.save();
+    if (!covered) { g.beginPath(); g.arc(lx, ly, R, 0, Math.PI * 2); g.clip(); g.fillStyle = P.bg; g.fillRect(0, 0, W, H); dotGrid(S, cX, cY + t * 9 * u); }
+    g.translate(0, -cY);
+    step3(t, S);
+    g.restore();
+    if (!covered) { g.strokeStyle = P.blue; g.lineWidth = Math.max(0, 16 * u * (1 - iris)); g.beginPath(); g.arc(lx, ly, R, 0, Math.PI * 2); g.stroke(); }
+  }
+  if (t >= T.TU && t < T.TM + 0.3) { g.save(); g.translate(0, H - cY); step4(t, S); g.restore(); }
+  if (t >= T.TM && t < T.TR + 1.0) step5(t, S);
+  if (t >= T.TR && t < T.TE + 1.0) recap(t, S);
+  if (t >= T.TE) ending(t, S);
+
+  vignette(S);
+  subtitles(t, S, SUBS);
+  const fade = range(t, T.FADE, DUR);                     // 30 frames to black
+  if (fade > 0) { g.fillStyle = `rgba(0,0,0,${fade})`; g.fillRect(0, 0, W, H); }
+}
+
+// ── sound: SFX on the spoken words; the score ducks under the voice ─────────
+const c = (t, type, gain = 0.5) => ({ t, type, gain });
+const { a1, a2, a3, p, s, q1, x1, q2, x2, q3, x3, q4, x4, q5, x5, r, e } = L;
+const tIn = [a1.start - 0.15, a2.start - 0.15, a3.start - 0.15], tOut = [a2.start - 0.55, a3.start - 0.55, T.A_END - 0.5];
+const typing = (t0, n, cps, gain = 0.22) => Array.from({ length: Math.ceil(n / 2) }, (_, i) => c(t0 + (i * 2) / cps, 'type', gain));
+const cues = [
+  // primer
+  c(0, 'thump', 0.45), ...[0, 1, 2].map((i) => c(0.3 + i * 0.14, 'pop', 0.35)), c(0.55, 'swipe', 0.35),
+  ...tIn.map((x) => c(x, 'swipe', 0.4)), ...tOut.map((x) => c(x, 'swipe', 0.3)),
+  ...[0, 1, 2].map((i) => c(a1.marks.asc + 0.1 + i * 0.15, 'tick', 0.5)), c(a1.marks.disc + 0.1, 'click', 0.6), c(a1.marks.disc + 0.12, 'thump', 0.35),
+  c(a2.marks.scol, 'pop', 0.5), c(a2.marks.part, 'tick', 0.5),
+  c(a3.marks.neg, 'swipe', 0.4), c(a3.marks.min, 'click', 0.5), c(a3.marks.maj, 'tick', 0.5),
+  // problem
+  ...[0, 1, 2].map((i) => c(p.marks.a + 0.05 + i * 0.12, 'pop', 0.45)),
+  c(T.Q_DROP, 'whoosh', 0.6), c(T.Q_DROP + 0.2, 'impact', 0.8), c(p.marks.d, 'swipe', 0.4), c(T.Q_TO_S, 'whoosh', 0.55),
+  // solution
+  ...ROLL.slice(0, 4).map((x, i) => c(x, 'tick', 0.55 + i * 0.08)), c(s.marks.five - 0.02, 'impact', 0.7),
+  ...[0, 1, 2, 3, 4].map((i) => c(s.marks.five + 0.36 + i * 0.15, 'pop', 0.4)), c(s.marks.before, 'swipe', 0.35),
+  c(s.marks.each, 'whoosh', 0.35), ...[0, 1, 2, 3, 4].map((i) => c(s.marks.each + 0.08 + i * 0.15, 'tick', 0.45)), ...typing(s.marks.emp, 22, 34),
+  // 1 · problématique
+  c(T.TX + 0.02, 'whoosh', 0.7), c(q1.start, 'thump', 0.6), c(q1.marks.q, 'swipe', 0.4),
+  c(q1.marks.scope, 'pop', 0.55), c(q1.marks.scope + 0.22, 'click', 0.55), c(q1.marks.rel, 'click', 0.55), c(q1.marks.rel + 0.08, 'pop', 0.5),
+  c(T.X1, 'swipe', 0.45), ...['who', 'where', 'when'].map((k) => c(x1.marks[k], 'pop', 0.45)),
+  c(x1.marks.sci, 'pop', 0.4), c(x1.marks.soc, 'pop', 0.4), c(x1.marks.d, 'whoosh', 0.35), c(x1.marks.rq + 0.3, 'chime', 0.25),
+  // 2 · cadre théorique
+  c(T.TP, 'whoosh', 0.75), ...typing(q2.marks.q, 15, 18, 0.28), c(q2.marks.lens, 'swipe', 0.4), c(q2.marks.study, 'click', 0.75), c(q2.marks.study + 0.03, 'chime', 0.2),
+  c(x2.marks.b, 'swipe', 0.3), c(x2.marks.d - 0.1, 'swipe', 0.35), c(x2.marks.cap, 'click', 0.6), c(x2.marks.bour, 'pop', 0.4),
+  c(x2.marks.e, 'whoosh', 0.45), c(x2.marks.her, 'pop', 0.5), c(x2.marks.reu, 'pop', 0.5), c(x2.marks.reu + 0.15, 'swipe', 0.35),
+  c(x2.marks.h, 'pop', 0.45), ...typing(x2.marks.hyp - 0.25, 64, 46, 0.18),
+  // 3 · méthodologie
+  c(T.TI, 'whoosh', 0.7), c(q3.start, 'thump', 0.5),
+  ...['q', 'cond', 'an'].flatMap((k) => [c(q3.marks[k] + 0.1, 'thump', 0.45), c(q3.marks[k] + 0.12, 'click', 0.45)]),
+  c(T.X3, 'whoosh', 0.5), c(x3.marks.quanti - 0.1, 'pop', 0.5), c(x3.marks.quali - 0.1, 'pop', 0.5), c(x3.marks.mix, 'swipe', 0.4), c(x3.marks.mix + 0.1, 'chime', 0.22),
+  c(x3.marks.c - 0.15, 'swipe', 0.4), ...['ech', 'col', 'ana', 'eth'].flatMap((k) => [c(x3.marks[k] - 0.1, 'tick', 0.5), c(x3.marks[k] + 0.35, 'click', 0.5)]), c(x3.marks.cons, 'pop', 0.45),
+  // 4 · résultats
+  c(T.TU, 'whoosh', 0.75), ...[0, 1, 2].map((i) => c(q4.start - 0.05 + i * 0.12, 'tick', 0.55)), c(q4.marks.found, 'swipe', 0.45), c(q4.marks.found + 0.26, 'pop', 0.55),
+  c(x4.marks.c, 'click', 0.45), c(x4.marks.tab, 'pop', 0.45), c(x4.marks.gra, 'swipe', 0.4), c(x4.marks.cit, 'pop', 0.45),
+  // 5 · discussion
+  c(T.TM, 'swipe', 0.55), c(T.TM + 0.18, 'tick', 0.55), c(q5.marks.q, 'pop', 0.4), c(q5.marks.res, 'pop', 0.4), c(q5.marks.ded, 'tick', 0.45),
+  c(x5.marks.prev, 'swipe', 0.4), ...[0, 1, 2].map((j) => c(x5.marks.prev + 0.45 + j * 0.15, 'pop', 0.35)), c(x5.marks.lim, 'click', 0.5),
+  c(S5.MERGE, 'whoosh', 0.6), c(S5.LOCK, 'impact', 0.7), ...[0, 1, 2].map((j) => c(x5.marks.fut + 0.35 + j * 0.12, 'tick', 0.5)),
+  // recap
+  c(T.TR, 'whoosh', 0.6), ...['a', 'b', 'c', 'd', 'e'].map((k, i) => c(r.marks[k], 'tick', 0.5 + i * 0.05)), c(r.marks.f, 'swipe', 0.45),
+  c(r.marks.g, 'whoosh', 0.4), ...[0, 1, 2].map((i) => c(r.marks.h + 0.15 + i * 0.15, 'chime', 0.22)),
+  // ending
+  c(T.TE, 'whoosh', 0.55), c(e.marks.a, 'swipe', 0.4), ...typing(e.marks.shs, 29, 36), c(e.marks.b + 0.1, 'pop', 0.45), c(e.marks.b + 0.45, 'pop', 0.45),
+];
+
+boot({
+  title: 'Les 5 étapes de la recherche empirique', dur: DUR, bpm: BPM, formats: ['9:16', '16:9'], palette: P, background: P.bg,
+  music: { style: 'minimal', key: 'D', seed: 3, intro: 1, breaks: [10, 59], volume: 0.3 },
+  voice: { file: 'audio/voice.wav', volume: 1 },
+  sfxVolume: 0.5,
+  cues,
+  poster: 64.9,
+  draw: film,
+});
+</script>

@@ -1,0 +1,860 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Recherche empirique</title>
+<link rel="stylesheet" href="/lib/fonts.css">
+<style>html,body{margin:0;background:#0F172A}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+// Demo, 30 s: "5 questions" + the five steps of empirical research. French VO (Google TTS), English subs.
+// Every cue is read from audio/timing.json (npm run tts), so the picture hits the spoken words.
+// 0.0 hook: digit roll 1→5, giant 5 slams · nodes pop · labels morph in
+// 8.4 match cut: node 1 becomes the target · 13.5 camera pan · 16.9 lens iris · 20.5 push up
+// 23.4 bars morph into speech bubbles · metaball merge · title locks · recap · fade to black
+import { spring, track, clamp, lerp, range, hash, noise, beatPulse, swapAlpha, frameHold, typed, mixColor, SPRING } from '/lib/motion.js';
+import { boot } from '/lib/stage.js';
+
+const TIMING = await fetch(new URL('./audio/timing.json', import.meta.url)).then((r) => r.json());
+
+const TITLE = 'Recherche empirique';
+const DUR = 30, BPM = 120;
+const FORMATS = ['9:16', '16:9'];
+const P = { bg: '#0F172A', blue: '#3B82F6', amber: '#F59E0B', ink: '#F8FAFC', dim: '#94A3B8',
+  slate: '#334155', card: '#1E293B', deep: '#0A1020', sky: '#93C5FD' };
+
+// Springs. ORG is the brief's organic spring (stiffness 120, damping 14): cards, icons, shapes.
+// Type never bounces (TYPE is critically damped). CAM settles camera moves.
+const ORG = [120, 14], TYPE = [260, 34], CAM = [150, 24], SNAP = SPRING.snappy, HEAVY = SPRING.heavy;
+const sp = (t, k = TYPE) => spring(t, k);
+
+// ── timing, all from the voice ──────────────────────────────────────────────
+const L = Object.fromEntries(TIMING.lines.map((l) => [l.id.split('-')[0], l]));
+const { s3, s4, s5, s6, s7, s8 } = L;
+const TX = s4.start - 0.55;   // match cut: node 1 → target
+const TP = s5.start - 0.5;    // camera pan right
+const TI = s6.start - 0.55;   // lens iris
+const TU = s7.start - 0.45;   // push up
+const TM = s8.start - 0.55;   // bars → bubbles
+const TMERGE = s8.marks.ded, TPILL = TMERGE + 0.62, TLOCK = 27.0, TRECAP = 27.55, TFADE = DUR - 0.5;
+const ROLL = [0.05, 0.19, 0.34, 0.53, 0.78];   // hook digit roll steps (1→5), lands on "cinq"
+
+const STEPS = ['Problématique', 'Cadre théorique', 'Méthodologie', 'Résultats', 'Discussion'];
+
+// ── helpers ─────────────────────────────────────────────────────────────────
+function measure(S, str, size, weight = 400, face = 'ui', tracking = 0) {
+  const { g } = S;
+  g.save(); g.font = S.font(size, weight, face); g.letterSpacing = `${tracking * size * S.u}px`;
+  const w = g.measureText(str).width; g.restore();
+  return w;
+}
+const fitSize = (S, str, weight, face, maxW, maxSize) => Math.min(maxSize, (100 * maxW) / measure(S, str, 100, weight, face));
+const circle = (g, x, y, r) => { g.beginPath(); g.arc(x, y, Math.max(0, r), 0, Math.PI * 2); };
+
+// Step layout: big numeral top-left, title under it, the visual in its own zone, subs in the bottom 15%.
+function lay(S) {
+  const { W, H, u } = S;
+  return S.pick({
+    portrait: { nx: 84 * u, ny: 400 * u, ns: 290, tx: 90 * u, ty: 548 * u, ts: 96, tMax: W * 0.84,
+      vx: W * 0.5, vy: H * 0.565, vr: 300 * u, subY: H * 0.87, subMax: W * 0.86, subSize: 46 },
+    landscape: { nx: 150 * u, ny: 440 * u, ns: 290, tx: 158 * u, ty: 580 * u, ts: 90, tMax: W * 0.4,
+      vx: W * 0.67, vy: H * 0.465, vr: 305 * u, subY: H * 0.9, subMax: W * 0.62, subSize: 42 },
+  });
+}
+function lay3(S) {
+  const { W, H, u } = S;
+  return S.pick({
+    portrait: { x: 84 * u, eyeY: 300 * u, headY: 470 * u, headSize: 150, headMax: W * 0.84, subY: 562 * u,
+      slotX: 140 * u, slotY0: 790 * u, gap: 150 * u, nodeR: 42 * u, labelSize: 56, fx: W * 0.56, fy: H * 0.46, fs: 1500 },
+    landscape: { x: 150 * u, eyeY: 350 * u, headY: 520 * u, headSize: 160, headMax: 800 * u, subY: 615 * u,
+      slotX: 1150 * u, slotY0: H / 2 - 2 * 138 * u - 20 * u, gap: 138 * u, nodeR: 38 * u, labelSize: 50, fx: W * 0.29, fy: H * 0.56, fs: 1250 },
+  });
+}
+
+// Big step numeral with a small "/5", like a chapter marker.
+function numeral(S, n, x, y, { alpha = 1, rise = 0, clip = false } = {}) {
+  const { g, u } = S, Ly = lay(S);
+  g.save();
+  if (clip) { g.beginPath(); g.rect(x - 40 * u, y - Ly.ns * 0.8 * u, 560 * u, Ly.ns * 0.86 * u); g.clip(); }
+  const w = S.text(String(n), x, y + rise, { size: Ly.ns, weight: 800, color: P.blue, tracking: -0.05, alpha });
+  S.text('/5', x + w + 12 * u, y - Ly.ns * 0.6 * u + rise, { size: 38, weight: 500, face: 'mono', color: P.dim, alpha });
+  g.restore();
+}
+
+// Odometer: digits roll through a slot. v is a float (1.0 → 5.0 rolls through 2, 3, 4).
+function odometer(S, v, x, y, size, { color = P.blue, weight = 800, slot = true, alpha = 1, face = 'ui' } = {}) {
+  const { g, u } = S;
+  const lh = size * u * 1.0;
+  g.save();
+  if (slot) { g.beginPath(); g.rect(x - size * u * 0.1, y - size * u * 0.82, size * u * 0.9, size * u * 0.9); g.clip(); }
+  for (let k = Math.floor(v); k <= Math.ceil(v); k++) {
+    const off = (k - v) * lh;
+    if (Math.abs(off) > lh * 1.1) continue;
+    S.text(String(k), x, y + off, { size, weight, color, face, tracking: -0.05, alpha });
+  }
+  g.restore();
+}
+
+// Background: navy with a faint dot grid that moves with the camera, plus a soft vignette.
+function dotGrid(S, cx, cy, alpha = 1) {
+  const { g, W, H, u } = S;
+  const gap = 64 * u, ox = ((-cx % gap) + gap) % gap, oy = ((-cy % gap) + gap) % gap;
+  g.fillStyle = `rgba(148,163,184,${0.11 * alpha})`;
+  for (let x = ox - gap; x < W + gap; x += gap) for (let y = oy - gap; y < H + gap; y += gap) g.fillRect(x - 1.5 * u, y - 1.5 * u, 3 * u, 3 * u);
+}
+function vignette(S) {
+  const { g, W, H } = S;
+  const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.hypot(W, H) * 0.62);
+  v.addColorStop(0, 'rgba(5,8,18,0)'); v.addColorStop(1, 'rgba(5,8,18,0.55)');
+  g.fillStyle = v; g.fillRect(0, 0, W, H);
+}
+const camX = (t, S) => S.W * sp(t - TP, CAM);
+const camY = (t, S) => S.H * sp(t - TU, CAM);
+const gridY = (t, S) => camY(t, S) + t * 9 * S.u;
+
+// ── 3 · "Voici 5 questions" ─────────────────────────────────────────────────
+const nodePos = (S, i) => { const A = lay3(S); return [A.slotX, A.slotY0 + i * A.gap]; };
+
+function scene3(t, S) {
+  const { g, W, H, u } = S;
+  const A = { ...lay3(S) };
+  A.headSize = fitSize(S, '5 questions', 800, 'ui', A.headMax, A.headSize);
+  const { five, before, each, emp } = s3.marks;
+  const zoomP = sp(t - TX, [110, 21]);                    // match cut progress
+  const fadeOut = 1 - range(zoomP, 0.05, 0.55);
+  const [n1x, n1y] = nodePos(S, 0);
+  const pre = sp(t - (TX - 0.9), [60, 16]) * 0.04;        // slow push toward node 1 before the cut
+
+  g.save();
+  g.translate(n1x, n1y); g.scale(1 + pre + zoomP * 3.2, 1 + pre + zoomP * 3.2); g.translate(-n1x, -n1y);
+  g.globalAlpha = fadeOut;
+
+  // giant background 5: rolls with the headline, slams on "cinq", then breathes
+  const v = 1 + ROLL.slice(1).reduce((a, r) => a + spring(t - r, SNAP), 0);
+  const slam = spring(t - five, HEAVY);
+  const gs = A.fs * (1.18 - 0.18 * slam + 0.03 * spring(t - five - 0.5, [20, 9]));
+  g.save();
+  g.translate(A.fx + noise(t * 0.3, 4) * 10 * u, A.fy + noise(t * 0.25, 8) * 10 * u);
+  g.rotate(-0.06 + noise(t * 0.2, 2) * 0.01);
+  const ga = lerp(0.14, 0.055, range(t, five, five + 0.7));
+  odometer(S, v, -gs * u * 0.29, gs * u * 0.36, gs, { color: `rgba(255,255,255,${ga})`, slot: false });
+  g.restore();
+
+  // eyebrow, typed on "recherche empirique"
+  const eye = 'LA RECHERCHE EMPIRIQUE';
+  const eyeT = typed(eye, t - emp, 34);
+  if (eyeT) {
+    const w = S.text(eyeT, A.x + 4 * u, A.eyeY, { size: 34, weight: 700, face: 'mono', color: P.amber, tracking: 0.1 });
+    if (eyeT.length < eye.length || Math.floor(t * 4) % 2 === 0) { g.fillStyle = P.amber; g.fillRect(A.x + 4 * u + w + 6 * u, A.eyeY - 28 * u, 18 * u, 34 * u); }
+  }
+
+  // headline: the 5 rolls 1→5 in its slot, "questions" rises letter by letter on "cinq"
+  odometer(S, v, A.x, A.headY, A.headSize, { color: P.amber });
+  const dW = measure(S, '5', A.headSize, 800, 'ui', -0.05) + 26 * u;
+  g.save();
+  g.beginPath(); g.rect(A.x + dW - 10 * u, A.headY - A.headSize * u * 0.85, W, A.headSize * u * 1.1); g.clip();
+  let x = A.x + dW;
+  for (const [i, ch] of [...'questions'].entries()) {
+    const s = sp(t - five + 0.06 - i * 0.025);
+    S.text(ch, x, A.headY + (1 - s) * A.headSize * u * 1.12, { size: A.headSize, weight: 800, color: P.ink, tracking: -0.03 });
+    x += measure(S, ch, A.headSize, 800, 'ui', -0.03);
+  }
+  g.restore();
+  // underline sweeps under the headline on "cinq"
+  g.fillStyle = P.blue;
+  g.fillRect(A.x, A.headY + 30 * u, (x - A.x) * sp(t - five - 0.2, SNAP), 10 * u);
+
+  // subline on "avant d'aboutir"
+  g.save();
+  g.beginPath(); g.rect(0, A.subY - 60 * u, W, 76 * u); g.clip();
+  S.text('avant toute conclusion', A.x + 4 * u, A.subY + (1 - sp(t - before)) * 70 * u, { size: 54, weight: 'italic 400', face: 'display', color: P.dim });
+  g.restore();
+
+  // five slots: nodes pop in (stagger 0.15), the rail draws on "chacune", numbers and labels morph in
+  const rail = sp(t - each, [70, 17]);
+  const top = A.slotY0, bot = A.slotY0 + 4 * A.gap;
+  g.strokeStyle = P.slate; g.lineWidth = 4 * u;
+  g.beginPath(); g.moveTo(A.slotX, top); g.lineTo(A.slotX, lerp(top, bot, sp(t - 1.2, [60, 16]))); g.stroke();
+  g.strokeStyle = P.blue; g.lineWidth = 6 * u;
+  g.beginPath(); g.moveTo(A.slotX, top); g.lineTo(A.slotX, lerp(top, bot, rail)); g.stroke();
+
+  for (let i = 0; i < 5; i++) {
+    const [nx, ny] = nodePos(S, i);
+    const tIn = 1.2 + i * 0.15, tOn = each + 0.08 + i * 0.15;
+    const pop = spring(t - tIn, ORG);
+    const on = sp(t - tOn, SNAP);
+    const pulse = 1 + 0.06 * beatPulse(t, BPM, { decay: 7 }) * (1 - on);
+    const r = A.nodeR * pop * pulse;
+    if (!(i === 0 && t >= TX)) {                          // node 1 leaves this scene at the match cut
+      g.fillStyle = mixColor(P.bg, P.blue, on); circle(g, nx, ny, r); g.fill();
+      g.strokeStyle = mixColor(P.slate, P.blue, on); g.lineWidth = 4 * u; circle(g, nx, ny, r); g.stroke();
+      // "?" rolls up and the step number rolls in
+      g.save(); circle(g, nx, ny, r); g.clip();
+      const roll = on * A.nodeR * 2.2;
+      S.text('?', nx, ny + 15 * u - roll, { size: 44, weight: 700, color: P.dim, align: 'center', alpha: pop });
+      S.text(String(i + 1), nx, ny + 15 * u + A.nodeR * 2.2 - roll, { size: 44, weight: 800, color: P.ink, align: 'center' });
+      g.restore();
+    }
+    // empty slot (skeleton bar) morphs into the label: bar width tracks the label, text enters after
+    const lx = nx + A.nodeR + 34 * u;
+    const lw = measure(S, STEPS[i], A.labelSize, 600);
+    const bw = track(t, [[0, 0], [tIn + 0.05, 150 + 40 * hash(i, 3)], [tOn, lw / u + 24]], 170, 24) * u;
+    const ba = 1 - range(t, tOn + 0.1, tOn + 0.3);
+    g.fillStyle = P.card; g.globalAlpha = fadeOut * ba;
+    S.rrect(lx - 12 * u, ny - 18 * u, bw, 36 * u, 18 * u); g.fill();
+    g.globalAlpha = fadeOut;
+    S.text(STEPS[i], lx, ny + A.labelSize * 0.36 * u + (1 - sp(t - tOn - 0.04)) * 20 * u,
+      { size: A.labelSize, weight: 600, color: i === 0 ? P.ink : mixColor(P.ink, P.dim, range(t, TX - 0.8, TX - 0.4)), alpha: swapAlpha(t, tOn) });
+  }
+  // node 1 gets an amber ring just before the cut: "this one first"
+  const ring = sp(t - (TX - 0.75), ORG);
+  if (ring > 0 && t < TX) { g.strokeStyle = P.amber; g.lineWidth = 4 * u; circle(g, n1x, n1y, A.nodeR * (1 + 0.45 * ring)); g.stroke(); }
+  g.restore();
+}
+
+// ── 4 · Problématique: target, scope, relevance ─────────────────────────────
+const DOTS = Array.from({ length: 84 }, (_, i) => {
+  const a = hash(i, 21) * Math.PI * 2, r = Math.sqrt(hash(i, 22)) * 0.9;
+  return { a, r, s: 0.6 + hash(i, 23) * 0.8 };
+});
+
+function scene4(t, S) {
+  const { g, u } = S;
+  const Ly = lay(S), A = lay3(S);
+  const { q, scope, rel } = s4.marks;
+  // ring + numeral fly in from node 1 (match cut)
+  const p = sp(t - TX, [110, 21]);
+  const [n1x, n1y] = nodePos(S, 0);
+  const cx = lerp(n1x, Ly.vx, p), cy = lerp(n1y, Ly.vy, p), R = lerp(A.nodeR, Ly.vr, p);
+  const drift = sp(t - s4.start, [8, 6]) * 0.025;          // slow push-in for the whole shot
+  g.save(); g.translate(Ly.vx, Ly.vy); g.scale(1 + drift, 1 + drift); g.translate(-Ly.vx, -Ly.vy);
+
+  // node fill fades as it opens into the target
+  g.fillStyle = P.blue; g.globalAlpha = 1 - range(p, 0, 0.35);
+  circle(g, cx, cy, R); g.fill(); g.globalAlpha = 1;
+  g.strokeStyle = P.blue; g.lineWidth = lerp(4, 6, p) * u; circle(g, cx, cy, R); g.stroke();
+
+  // tick ring sweeps around, then keeps turning slowly
+  const sweep = sp(t - (TX + 0.35), [60, 16]);
+  g.save(); g.translate(cx, cy); g.rotate(t * 0.12);
+  g.strokeStyle = P.slate; g.lineWidth = 3 * u;
+  for (let i = 0; i < 72 * sweep; i++) {
+    const a = (i / 72) * Math.PI * 2, l = i % 6 === 0 ? 22 : 10;
+    g.beginPath(); g.moveTo(Math.cos(a) * (R + 16 * u), Math.sin(a) * (R + 16 * u));
+    g.lineTo(Math.cos(a) * (R + (16 + l) * u), Math.sin(a) * (R + (16 + l) * u)); g.stroke();
+  }
+  g.restore();
+
+  // the problem space: dots ripple outward, then scope dims what is outside
+  const rs = Ly.vr * 0.56 * spring(t - scope, ORG);
+  const lit = sp(t - scope - 0.1, SPRING.default);
+  for (const [i, d] of DOTS.entries()) {
+    const appear = spring(t - (TX + 0.28) - d.r * 0.5, ORG);
+    if (appear <= 0) continue;
+    const dx = Math.cos(d.a + noise(t * 0.3, i) * 0.05) * d.r * Ly.vr, dy = Math.sin(d.a + noise(t * 0.3, i) * 0.05) * d.r * Ly.vr;
+    const inside = Math.hypot(dx, dy) < Ly.vr * 0.56;
+    const relevant = Math.hypot(dx, dy) < Ly.vr * 0.2;
+    let col = inside ? mixColor(P.dim, P.ink, lit) : P.dim;
+    if (relevant) col = mixColor(col, P.amber, sp(t - rel, SNAP));
+    g.fillStyle = col; g.globalAlpha = (inside ? 1 : lerp(1, 0.22, lit)) * Math.min(1, appear);
+    circle(g, Ly.vx + dx, Ly.vy + dy, 5.5 * u * d.s * appear); g.fill();
+  }
+  g.globalAlpha = 1;
+
+  // scope: dashed amber limit expands to its boundary, a bounding box snaps around it
+  if (rs > 0) {
+    g.save(); g.setLineDash([14 * u, 10 * u]); g.lineDashOffset = -t * 40 * u;
+    g.strokeStyle = P.amber; g.lineWidth = 4 * u; circle(g, Ly.vx, Ly.vy, rs); g.stroke(); g.restore();
+    const box = sp(t - scope - 0.22, SNAP), b0 = Ly.vr * 0.56 * lerp(1.5, 1.12, box), arm = 34 * u * box;
+    g.strokeStyle = P.amber; g.lineWidth = 5 * u; g.lineCap = 'square'; g.globalAlpha = box;
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      g.beginPath(); g.moveTo(Ly.vx + sx * b0, Ly.vy + sy * (b0 - arm)); g.lineTo(Ly.vx + sx * b0, Ly.vy + sy * b0);
+      g.lineTo(Ly.vx + sx * (b0 - arm), Ly.vy + sy * b0); g.stroke();
+    }
+    g.globalAlpha = 1;
+    const lab = typed('délimitation', t - scope - 0.3, 30);
+    const lead = sp(t - scope - 0.25, SNAP);
+    const [ax, ay, ex, ey, lx, ly, al] = S.pick({
+      portrait: [Ly.vx + b0, Ly.vy - b0, Ly.vx + Ly.vr * 0.78, Ly.vy - Ly.vr - 60 * u, Ly.vx + Ly.vr * 0.78, Ly.vy - Ly.vr - 76 * u, 'right'],
+      landscape: [Ly.vx - b0, Ly.vy - b0, Ly.vx - Ly.vr - 56 * u, Ly.vy - b0, Ly.vx - Ly.vr - 66 * u, Ly.vy - b0 + 12 * u, 'right'],
+    });
+    g.strokeStyle = P.amber; g.lineWidth = 2.5 * u; g.globalAlpha = 0.85;
+    g.beginPath(); g.moveTo(ax, ay); g.lineTo(lerp(ax, ex, lead), lerp(ay, ey, lead)); g.stroke(); g.globalAlpha = 1;
+    S.text(lab, lx, ly, { size: 36, weight: 700, face: 'mono', color: P.amber, align: al });
+  }
+
+  // relevance: crosshair draws, bullseye pops, one ripple
+  const ch = sp(t - rel, [90, 19]);
+  if (ch > 0) {
+    g.strokeStyle = P.ink; g.lineWidth = 2.5 * u; g.globalAlpha = 0.7;
+    const ext = Ly.vr * 1.08 * ch;
+    g.beginPath(); g.moveTo(Ly.vx - ext, Ly.vy); g.lineTo(Ly.vx + ext, Ly.vy);
+    g.moveTo(Ly.vx, Ly.vy - ext); g.lineTo(Ly.vx, Ly.vy + ext); g.stroke(); g.globalAlpha = 1;
+    const eye = Ly.vr * 0.13 * spring(t - rel - 0.08, ORG);
+    g.fillStyle = P.amber; circle(g, Ly.vx, Ly.vy, eye); g.fill();
+    g.fillStyle = P.bg; circle(g, Ly.vx, Ly.vy, eye * 0.38); g.fill();
+    const rip = range(t, rel + 0.1, rel + 0.9);
+    if (rip > 0 && rip < 1) { g.strokeStyle = P.amber; g.lineWidth = 4 * u * (1 - rip); g.globalAlpha = 1 - rip; circle(g, Ly.vx, Ly.vy, lerp(eye, Ly.vr * 0.7, rip)); g.stroke(); g.globalAlpha = 1; }
+    const lead = sp(t - rel - 0.18, SNAP);
+    const [ax, ay, ex, ey, lx, ly, al] = S.pick({
+      portrait: [Ly.vx, Ly.vy + eye, Ly.vx - Ly.vr * 0.62, Ly.vy + Ly.vr + 64 * u, Ly.vx - Ly.vr * 0.62, Ly.vy + Ly.vr + 104 * u, 'left'],
+      landscape: [Ly.vx + eye, Ly.vy, Ly.vx + Ly.vr + 56 * u, Ly.vy, Ly.vx + Ly.vr + 66 * u, Ly.vy + 12 * u, 'left'],
+    });
+    g.strokeStyle = P.ink; g.lineWidth = 2.5 * u; g.globalAlpha = 0.7;
+    g.beginPath(); g.moveTo(ax, ay); g.lineTo(lerp(ax, ex, lead), lerp(ay, ey, lead)); g.stroke(); g.globalAlpha = 1;
+    S.text(typed('pertinence', t - rel - 0.3, 30), lx, ly, { size: 36, weight: 700, face: 'mono', color: P.ink, align: al });
+  }
+  g.restore();
+
+  // numeral 1: flies from the node to the top-left anchor
+  const np = sp(t - TX - 0.06, [140, 24]);
+  if (np < 0.999) {
+    const size = lerp(44, Ly.ns, np);
+    const x = lerp(n1x - 13 * u, Ly.nx, np), y = lerp(n1y + 15 * u, Ly.ny, np);
+    S.text('1', x, y, { size, weight: 800, color: mixColor(P.ink, P.blue, np), tracking: -0.05 });
+  } else numeral(S, 1, Ly.nx, Ly.ny);
+  if (np > 0.9) S.text('/5', Ly.nx + measure(S, '1', Ly.ns, 800, 'ui', -0.05) + 12 * u, Ly.ny - Ly.ns * 0.6 * u, { size: 38, weight: 500, face: 'mono', color: P.dim, alpha: range(np, 0.9, 0.999) });
+
+  // title slides in from the left, amber underline grows with a soft glow
+  const ts = fitSize(S, 'Problématique', 600, 'display', Ly.tMax, Ly.ts);
+  const sIn = sp(t - q);
+  S.text('Problématique', Ly.tx - (1 - sIn) * 50 * u, Ly.ty, { size: ts, weight: 600, face: 'display', color: P.ink, alpha: range(t, q, q + 0.18) });
+  const uw = measure(S, 'Problématique', ts, 600, 'display') * sp(t - q - 0.22, [170, 26]);
+  if (uw > 0) {
+    g.save(); g.shadowColor = 'rgba(245,158,11,0.75)'; g.shadowBlur = 22 * u;
+    g.fillStyle = P.amber; S.rrect(Ly.tx, Ly.ty + 26 * u, uw, 9 * u, 4.5 * u); g.fill(); g.restore();
+  }
+}
+
+// ── 5 · Cadre théorique: a lens brings the theory into focus ────────────────
+const WORDS = [
+  ['théorie', -0.3, 0.02, 56], ['concepts', 0.62, -0.62, 40], ['hypothèses', -0.62, -0.74, 40],
+  ['modèle', 1.08, -0.18, 42], ['capital culturel', 0.72, 0.2, 36], ['variables', 1.12, 0.62, 36],
+  ['reproduction', -1.08, 0.5, 36], ['paradigme', 0.12, 0.7, 44], ['inégalités', 0.82, 0.98, 34],
+  ['littérature', -0.72, 0.95, 36], ['définitions', 0.18, -1.02, 34], ['cadre', -1.22, -0.3, 36],
+  ['sociologie', 1.22, -0.86, 34], ['école', -1.1, -1.0, 34],
+];
+function wordField(S, cx, cy, R, { color = P.dim, hot = -1 } = {}) {
+  WORDS.forEach(([w, x, y, size], i) => {
+    S.text(w, cx + x * R, cy + y * R, { size, weight: 600, color: i === hot ? P.amber : color, align: 'center' });
+  });
+}
+const lensPos = (t, S) => {
+  const Ly = lay(S);
+  const k = trackN2(t, [[0, [0.5, -0.35]], [s5.marks.q, [0.25, -0.25]], [s5.marks.lens - 0.15, [-0.3, -0.04]]], 70, 15);
+  return [Ly.vx + k[0] * Ly.vr + noise(t * 0.5, 31) * 10 * S.u, Ly.vy + k[1] * Ly.vr + noise(t * 0.5, 32) * 10 * S.u];
+};
+function trackN2(t, keys, k, d) { return [0, 1].map((j) => track(t, keys.map(([kt, v]) => [kt, v[j]]), k, d)); }
+
+function scene5(t, S) {
+  const { g, u } = S;
+  const Ly = lay(S);
+  const { q, lens, study } = s5.marks;
+  const R = Ly.vr;
+
+  // the whole field, out of focus
+  g.save(); g.filter = `blur(${9 * u}px)`; g.globalAlpha = 0.75;
+  wordField(S, Ly.vx, Ly.vy, R); g.restore();
+
+  // lens scales up on "Avec quelle", aperture opens on "lunette", focus snaps on "doit-on l'étudier"
+  const [lx, ly] = lensPos(t, S);
+  const sc = spring(t - q, ORG);
+  const rl = R * 0.66 * sc;
+  if (rl > 1) {
+    const ap = sp(t - lens, [150, 20]);
+    const focus = sp(t - study, [400, 40]);
+    const mag = 1.32;
+    // glass: magnified field, sharp once focused
+    g.save(); circle(g, lx, ly, rl); g.clip();
+    g.fillStyle = P.deep; g.fillRect(lx - rl, ly - rl, rl * 2, rl * 2);
+    g.save(); g.translate(lx, ly); g.scale(mag, mag); g.translate(-lx, -ly);
+    g.filter = `blur(${lerp(10, 0, focus) * u}px)`;
+    // nearest word to the lens centre lights amber once sharp
+    let hot = -1, best = 1e9;
+    WORDS.forEach(([, x, y], i) => { const d = Math.hypot(Ly.vx + x * R - lx, Ly.vy + y * R - ly); if (d < best) { best = d; hot = i; } });
+    wordField(S, Ly.vx, Ly.vy, R, { color: P.ink, hot: focus > 0.5 ? hot : -1 });
+    g.restore();
+    // aperture blades: a hexagon opening inside the glass
+    const hexR = lerp(rl * 0.12, rl * 1.25, ap), rot = lerp(0.9, 0, ap);
+    g.beginPath(); g.arc(lx, ly, rl + 2, 0, Math.PI * 2);
+    for (let i = 0; i < 6; i++) { const a = rot + (i / 6) * Math.PI * 2; i ? g.lineTo(lx + Math.cos(a) * hexR, ly + Math.sin(a) * hexR) : g.moveTo(lx + Math.cos(a) * hexR, ly + Math.sin(a) * hexR); }
+    g.closePath(); g.fillStyle = '#060B16'; g.fill('evenodd');
+    g.strokeStyle = 'rgba(148,163,184,0.25)'; g.lineWidth = 2 * u;
+    for (let i = 0; i < 6; i++) {
+      const a = rot + (i / 6) * Math.PI * 2;
+      g.beginPath(); g.moveTo(lx + Math.cos(a) * hexR, ly + Math.sin(a) * hexR);
+      g.lineTo(lx + Math.cos(a + 1.2) * rl * 1.4, ly + Math.sin(a + 1.2) * rl * 1.4); g.stroke();
+    }
+    // glint
+    g.strokeStyle = 'rgba(255,255,255,0.10)'; g.lineWidth = 10 * u;
+    g.beginPath(); g.arc(lx, ly, rl * 0.82, -2.6, -1.9); g.stroke();
+    g.restore();
+    // barrel: thick blue ring, focus scale that turns when it focuses
+    g.strokeStyle = P.blue; g.lineWidth = 16 * u; circle(g, lx, ly, rl + 8 * u); g.stroke();
+    g.strokeStyle = P.slate; g.lineWidth = 2 * u; circle(g, lx, ly, rl + 40 * u * sc); g.stroke();
+    g.save(); g.translate(lx, ly); g.rotate(lerp(0, -0.7, focus) + t * 0.05);
+    for (let i = 0; i < 48; i++) {
+      const a = (i / 48) * Math.PI * 2, l = i % 4 === 0 ? 14 : 7;
+      g.strokeStyle = i % 4 === 0 ? P.ink : P.dim; g.globalAlpha = sc * 0.8; g.lineWidth = 2.5 * u;
+      g.beginPath(); g.moveTo(Math.cos(a) * (rl + 20 * u), Math.sin(a) * (rl + 20 * u));
+      g.lineTo(Math.cos(a) * (rl + (20 + l) * u), Math.sin(a) * (rl + (20 + l) * u)); g.stroke();
+    }
+    g.globalAlpha = 1; g.restore();
+    // focus mark: an amber notch that locks at the top
+    g.fillStyle = P.amber; g.globalAlpha = range(focus, 0.2, 0.6);
+    g.beginPath(); g.moveTo(lx, ly - rl - 44 * u); g.lineTo(lx - 10 * u, ly - rl - 62 * u); g.lineTo(lx + 10 * u, ly - rl - 62 * u); g.fill();
+    g.globalAlpha = 1;
+  }
+
+  numeral(S, 2, Ly.nx, Ly.ny);
+  // title types out like a terminal, block cursor
+  const ts = fitSize(S, 'Cadre théorique', 600, 'display', Ly.tMax, Ly.ts);
+  const str = typed('Cadre théorique', t - q, 18);
+  const w = S.text(str, Ly.tx, Ly.ty, { size: ts, weight: 600, face: 'display', color: P.ink });
+  const done = str.length === 15;
+  if (t >= q - 0.2 && (!done || Math.floor(t * 3.5) % 2 === 0)) { g.fillStyle = P.blue; g.fillRect(Ly.tx + w + 8 * u, Ly.ty - ts * 0.72 * u, ts * 0.42 * u, ts * 0.86 * u); }
+}
+
+// ── 6 · Méthodologie: isometric gears ───────────────────────────────────────
+const MOD = 0.5 / 12;                                       // pitch radius / teeth, shared so they mesh
+const GEARS = [
+  { n: 12, color: P.blue, label: 'protocole', mark: 'q' },
+  { n: 8, color: '#CBD5E1', label: 'terrain', mark: 'cond' },
+  { n: 10, color: P.amber, label: 'analyse', mark: 'an' },
+];
+(() => {                                                   // place them so each meshes with the previous one
+  const dirs = [0, -0.35, 1.25];
+  GEARS.forEach((G, i) => {
+    G.r = G.n * MOD;
+    if (i === 0) { G.x = -0.42; G.y = 0.05; return; }
+    const P0 = GEARS[i - 1], d = P0.r + G.r;
+    G.th = dirs[i]; G.x = P0.x + Math.cos(G.th) * d; G.y = P0.y + Math.sin(G.th) * d;
+  });
+})();
+function gearAngles(t) {
+  const a = [t * 0.9];
+  for (let i = 1; i < GEARS.length; i++) {
+    const A = GEARS[i - 1], B = GEARS[i];
+    a[i] = B.th + Math.PI + Math.PI / B.n - (A.n / B.n) * (a[i - 1] - B.th);
+  }
+  return a;
+}
+function gearPath(g, G, ang, s) {
+  const ro = G.r + MOD * 0.95, ri = G.r - MOD * 1.1, n = G.n;
+  g.beginPath();
+  for (let k = 0; k < n; k++) {
+    const a0 = ang + (k / n) * Math.PI * 2, st = (Math.PI * 2) / n;
+    const pts = [[a0 - st * 0.25, ri], [a0 - st * 0.16, ro], [a0 + st * 0.16, ro], [a0 + st * 0.25, ri]];
+    pts.forEach(([a, r], j) => { const x = G.x + Math.cos(a) * r * s, y = G.y + Math.sin(a) * r * s; (k === 0 && j === 0) ? g.moveTo(x, y) : g.lineTo(x, y); });
+    g.arc(G.x, G.y, ri * s, a0 + st * 0.25, a0 + st * 0.75);
+  }
+  g.closePath();
+  g.moveTo(G.x + G.r * 0.34 * s, G.y); g.arc(G.x, G.y, G.r * 0.34 * s, 0, Math.PI * 2, true);
+}
+
+function scene6(t, S) {
+  const { g, u } = S;
+  const Ly = lay(S);
+  const m = s6.marks;
+  const scale = Ly.vr * 1.25;
+  const ang = gearAngles(t);
+  const oy = S.pick({ portrait: Ly.vr * 0.12, landscape: -Ly.vr * 0.16 });
+  const iso = (fn) => { g.save(); g.translate(Ly.vx, Ly.vy + oy); g.transform(0.866 * scale, 0.5 * scale, -0.866 * scale, 0.5 * scale, 0, 0); fn(); g.restore(); };
+
+  // iso plate grid
+  const plate = sp(t - TI, [60, 16]);
+  iso(() => {
+    g.strokeStyle = 'rgba(148,163,184,0.16)'; g.lineWidth = 2 * u / scale;
+    for (let i = -4; i <= 4; i++) {
+      const e = 1.15 * plate;
+      g.beginPath(); g.moveTo(i * 0.28, -e); g.lineTo(i * 0.28, e); g.moveTo(-e, i * 0.28); g.lineTo(e, i * 0.28); g.stroke();
+    }
+  });
+
+  // blueprint: outlines of the three gears, waiting for the real ones
+  GEARS.forEach((G, i) => {
+    const solid = spring(t - (m[G.mark] - 0.05), ORG);
+    const a = plate * clamp(1 - solid * 1.4);
+    if (a <= 0.01) return;
+    iso(() => { gearPath(g, G, ang[i], 1); g.setLineDash([8 * u / scale, 7 * u / scale]); g.strokeStyle = `rgba(147,197,253,${0.55 * a})`; g.lineWidth = 2.5 * u / scale; g.stroke(); });
+  });
+
+  // gears drop in on their words, extruded, turning together
+  GEARS.forEach((G, i) => {
+    const t0 = m[G.mark] - 0.05;
+    const land = spring(t - t0, ORG), s = clamp(spring(t - t0, [200, 22]) * 1.0, 0, 1.2);
+    if (s <= 0.001) return;
+    const lift = (1 - land) * -260 * u;
+    const thick = 34 * u;
+    g.save(); g.translate(0, lift);
+    for (let k = 7; k >= 1; k--) {                        // side wall: stacked layers, darker below
+      g.save(); g.translate(0, (k / 7) * thick);
+      iso(() => { gearPath(g, G, ang[i], s); g.fillStyle = mixColor(G.color, '#020617', 0.55 + k * 0.03); g.fill('evenodd'); });
+      g.restore();
+    }
+    iso(() => {
+      gearPath(g, G, ang[i], s); g.fillStyle = G.color; g.fill('evenodd');
+      g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = 2 * u / scale; g.stroke();
+      // spokes
+      g.strokeStyle = mixColor(G.color, '#020617', 0.35); g.lineWidth = 0.035 * s;
+      for (let k = 0; k < 3; k++) { const a = ang[i] + k * 2.094; g.beginPath(); g.moveTo(G.x + Math.cos(a) * G.r * 0.36 * s, G.y + Math.sin(a) * G.r * 0.36 * s); g.lineTo(G.x + Math.cos(a) * G.r * 0.72 * s, G.y + Math.sin(a) * G.r * 0.72 * s); g.stroke(); }
+    });
+    g.restore();
+    // label under the gear, in screen space
+    const sx = Ly.vx + (G.x - G.y) * 0.866 * scale, sy = Ly.vy + oy + (G.x + G.y) * 0.5 * scale;
+    const la = swapAlpha(t, t0 + 0.12);
+    const ly = i === 2 ? sy + G.r * scale * 0.707 + thick + 64 * u : sy - G.r * scale * 0.707 - 34 * u;
+    S.text(G.label, sx, ly + (1 - sp(t - t0 - 0.12)) * 20 * u, { size: 36, weight: 700, face: 'mono', color: i === 2 ? P.amber : P.ink, align: 'center', alpha: la });
+  });
+
+  // numeral 3 rises out of its slot as the iris opens
+  numeral(S, 3, Ly.nx, Ly.ny, { clip: true, rise: (1 - sp(t - (TI + 0.12))) * Ly.ns * 0.9 * u });
+
+  // title flips in on rotateX 90 → 0, real perspective (row slices)
+  const ts = fitSize(S, 'Méthodologie', 600, 'display', Ly.tMax, Ly.ts);
+  flipText(S, 'Méthodologie', Ly.tx, Ly.ty, ts, (Math.PI / 2) * (1 - spring(t - m.n - 0.08, [140, 24])));
+}
+
+// Text rotated about its horizontal centre line (rotateX), with perspective, by slicing rows.
+function flipText(S, str, x, y, size, theta) {
+  const { g, u } = S;
+  if (theta >= Math.PI / 2 - 0.01) return;
+  const h = size * u * 1.1, top = -size * u * 0.82, f = 900 * u, N = 36;
+  const cy = top + h / 2, w = measure(S, str, size, 600, 'display');
+  const shade = mixColor(P.dim, P.ink, Math.cos(theta));
+  for (let i = 0; i < N; i++) {
+    const y0 = top + (i / N) * h, y1 = top + ((i + 1) / N) * h;
+    const proj = (yy) => { const d = yy - cy, z = d * Math.sin(theta), s = f / (f + z); return [cy + d * Math.cos(theta) * s, s]; };
+    const [Y0, s0] = proj(y0), [Y1] = proj(y1);
+    const k = (Y1 - Y0) / (y1 - y0);
+    if (!(k > 0.001)) continue;
+    g.save();
+    g.translate(x + (w / 2) * (1 - s0), y + Y0 - y0 * k);   // keep the row centred while it narrows
+    g.scale(s0, k);
+    g.beginPath(); g.rect(-20 * u, y0 - 0.5, w + 40 * u, (y1 - y0) + 1); g.clip();
+    S.text(str, 0, 0, { size, weight: 600, face: 'display', color: shade });
+    g.restore();
+  }
+}
+
+// ── 7 · Résultats: bars grow, re-sort, the title pops at the apex ──────────
+const BARS = [81, 34, 58];                                 // order they grow in; they sort on "trouvé"
+const SORTED = [2, 0, 1];                                  // slot of each bar after sorting
+function barGeom(t, S) {
+  const Ly = lay(S);
+  const base = Ly.vy + Ly.vr * 0.82, maxH = Ly.vr * 1.62, bw = Ly.vr * 0.44, step = Ly.vr * 0.72;
+  const found = s7.marks.found;
+  return BARS.map((v, i) => {
+    const slot = track(t, [[0, i], [found + 0.02 * i, SORTED[i]]], 150, 18);
+    const grow = spring(t - (s7.start - 0.05 + i * 0.12), ORG);
+    const h = maxH * (v / 81) * grow;
+    const x = Ly.vx + (slot - 1) * step - bw / 2;
+    return { x, y: base - h, w: bw, h, v, i, grow, tall: v === 81, base };
+  });
+}
+
+function scene7(t, S) {
+  const { g, u } = S;
+  const Ly = lay(S);
+  const found = s7.marks.found;
+  const bars = barGeom(t, S);
+  const base = bars[0].base, left = Ly.vx - Ly.vr * 1.15, right = Ly.vx + Ly.vr * 1.15;
+  const out = 1 - range(t, TM - 0.05, TM + 0.2);         // chart chrome leaves as the bars become bubbles
+
+  g.globalAlpha = out;
+  const axis = sp(t - (TU + 0.05), [90, 19]);
+  for (let k = 1; k <= 3; k++) {
+    g.strokeStyle = 'rgba(148,163,184,0.14)'; g.lineWidth = 2 * u;
+    const yy = base - (Ly.vr * 1.62 * k) / 3;
+    g.beginPath(); g.moveTo(left, yy); g.lineTo(lerp(left, right, sp(t - (TU + 0.12 + k * 0.06), [90, 19])), yy); g.stroke();
+  }
+  g.strokeStyle = P.dim; g.lineWidth = 4 * u;
+  g.beginPath(); g.moveTo(left, base); g.lineTo(lerp(left, right, axis), base); g.stroke();
+  g.globalAlpha = 1;
+
+  if (t < TM) {
+    const hi = sp(t - found - 0.12, [170, 26]);
+    for (const b of bars) {
+      if (b.h <= 0.5) continue;
+      g.fillStyle = b.tall ? P.blue : b.v === 34 ? P.blue : '#60A5FA';
+      S.rrect(b.x, b.y, b.w, b.h, 14 * u); g.fill();
+      g.fillRect(b.x, b.base - Math.min(b.h, 14 * u), b.w, Math.min(b.h, 14 * u));   // square foot on the axis
+      if (b.tall && hi > 0) {                              // the winner fills amber from the axis up
+        g.save(); g.beginPath(); g.rect(b.x - 1, b.base - b.h * hi, b.w + 2, b.h * hi); g.clip();
+        g.fillStyle = P.amber; S.rrect(b.x, b.y, b.w, b.h, 14 * u); g.fill(); g.fillRect(b.x, b.base - 14 * u, b.w, 14 * u);
+        g.restore();
+      }
+      const n = Math.round(b.v * clamp(b.grow));
+      if (b.h > 70 * u) S.text(`${n}%`, b.x + b.w / 2, b.y + 54 * u, { size: 36, weight: 700, color: P.bg, align: 'center' });
+    }
+    // title pops at the apex of the tallest bar
+    const tb = bars.find((b) => b.tall);
+    const pop = spring(t - found - 0.26, [300, 26]);
+    const ts = S.pick({ portrait: 84, landscape: 76 });
+    if (pop > 0) {
+      g.save(); g.translate(tb.x + tb.w / 2, tb.y - 30 * u); g.scale(lerp(0.4, 1, pop), lerp(0.4, 1, pop));
+      S.text('Résultats', 0, 0, { size: ts, weight: 600, face: 'display', color: P.ink, align: 'center', alpha: clamp(pop * 3) * (1 - range(t, TM - 0.2, TM - 0.05)) });
+      g.restore();
+    }
+  }
+  if (t < TM) numeral(S, 4, Ly.nx, Ly.ny);
+}
+
+// ── 8 · Discussion et conclusion: two voices merge into one ─────────────────
+function bubbleState(S, side) {                            // [cx, cy, r]
+  const Ly = lay(S);
+  return side === 0 ? [Ly.vx - Ly.vr * 0.62, Ly.vy - Ly.vr * 0.18, Ly.vr * 0.44] : [Ly.vx + Ly.vr * 0.62, Ly.vy + Ly.vr * 0.12, Ly.vr * 0.44];
+}
+// Metaball bridge between two circles (after Hiroyuki Sato's construction).
+function metaball(g, x1, y1, r1, x2, y2, r2, v = 0.5, handle = 2.4) {
+  const d = Math.hypot(x2 - x1, y2 - y1);
+  const maxD = (r1 + r2) * 1.6;
+  if (r1 <= 0 || r2 <= 0 || d > maxD || d <= Math.abs(r1 - r2)) return false;
+  let u1 = 0, u2 = 0;
+  if (d < r1 + r2) {
+    u1 = Math.acos(clamp((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d), -1, 1));
+    u2 = Math.acos(clamp((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d), -1, 1));
+  }
+  const ab = Math.atan2(y2 - y1, x2 - x1), spread = Math.acos(clamp((r1 - r2) / d, -1, 1));
+  const a1 = ab + u1 + (spread - u1) * v, a2 = ab - u1 - (spread - u1) * v;
+  const a3 = ab + Math.PI - u2 - (Math.PI - u2 - spread) * v, a4 = ab - Math.PI + u2 + (Math.PI - u2 - spread) * v;
+  const pol = (x, y, a, r) => [x + Math.cos(a) * r, y + Math.sin(a) * r];
+  const p1a = pol(x1, y1, a1, r1), p1b = pol(x1, y1, a2, r1), p2a = pol(x2, y2, a3, r2), p2b = pol(x2, y2, a4, r2);
+  const d2 = Math.min(v * handle, Math.hypot(p1a[0] - p2a[0], p1a[1] - p2a[1]) / (r1 + r2)) * Math.min(1, (d * 2) / (r1 + r2));
+  const h1 = pol(...p1a, a1 - Math.PI / 2, r1 * d2), h2 = pol(...p2a, a3 + Math.PI / 2, r2 * d2);
+  const h3 = pol(...p2b, a4 - Math.PI / 2, r2 * d2), h4 = pol(...p1b, a2 + Math.PI / 2, r1 * d2);
+  g.beginPath(); g.moveTo(...p1a); g.bezierCurveTo(...h1, ...h2, ...p2a); g.lineTo(...p2b); g.bezierCurveTo(...h3, ...h4, ...p1b); g.closePath();
+  return true;
+}
+
+function scene8(t, S) {
+  const { g, W, H, u } = S;
+  const Ly = lay(S);
+  const { q, res, ded } = s8.marks;
+  const endBars = barGeom(TM, S);
+  const midX = W / 2, midY = S.pick({ portrait: H * 0.47, landscape: H * 0.5 });
+  const title = 'Discussions et conclusion';
+  const ts = fitSize(S, title, 600, 'display', S.pick({ portrait: W * 0.74, landscape: W * 0.5 }), 76);
+  const pillW = measure(S, title, ts, 600, 'display') + 110 * u, pillH = ts * u * 1.9;
+
+  // bars → bubbles → one circle → pill
+  const shapes = [0, 1].map((side) => {
+    const b = endBars.find((x) => (side === 0 ? x.v === 34 : x.v === 81));
+    const [bx, by, br] = bubbleState(S, side);
+    const k = [130, 17];
+    const cx = track(t, [[0, b.x + b.w / 2], [TM, bx], [ded, midX]], ...k);
+    const cy = track(t, [[0, b.y + b.h / 2], [TM, by], [ded, midY]], ...k);
+    const w = track(t, [[0, b.w], [TM, br * 2], [ded, Ly.vr * 0.5 * 2], [TPILL, pillW]], ...k);
+    const h = track(t, [[0, b.h], [TM, br * 2], [ded, Ly.vr * 0.5 * 2], [TPILL, pillH]], ...k);
+    return { cx, cy, w: Math.max(0, w), h: Math.max(0, h), side };
+  });
+  const colL = P.blue, colR = P.amber;
+  const tail = (s, r, col) => {                            // speech-bubble tail, retracts on the merge
+    const tl = sp(t - TM - 0.25, ORG) * (1 - sp(t - ded, SNAP));
+    if (tl <= 0.01) return;
+    const dir = s.side === 0 ? -1 : 1;
+    g.fillStyle = col; g.beginPath();
+    g.moveTo(s.cx + dir * r * 0.35, s.cy + r * 0.8);
+    g.lineTo(s.cx + dir * r * (0.35 + 0.55 * tl), s.cy + r * (0.8 + 0.5 * tl));
+    g.lineTo(s.cx + dir * r * 0.75, s.cy + r * 0.5); g.closePath(); g.fill();
+  };
+  // middle bar collapses into the axis
+  const mid = endBars.find((x) => x.v === 58), mc = 1 - sp(t - TM, SNAP);
+  if (mc > 0.01) { g.fillStyle = '#60A5FA'; S.rrect(mid.x, mid.base - mid.h * mc, mid.w, mid.h * mc, 14 * u); g.fill(); }
+
+  const merging = t >= ded;
+  const [A, B] = shapes;
+  if (merging && t < TPILL + 0.05) {
+    const ra = Math.min(A.w, A.h) / 2, rb = Math.min(B.w, B.h) / 2;
+    tail(A, ra, colL); tail(B, rb, colR);
+    g.fillStyle = colL;
+    S.rrect(A.cx - A.w / 2, A.cy - A.h / 2, A.w, A.h, Math.min(A.w, A.h) / 2); g.fill();
+    S.rrect(B.cx - B.w / 2, B.cy - B.h / 2, B.w, B.h, Math.min(B.w, B.h) / 2); g.fill();
+    if (metaball(g, A.cx, A.cy, ra, B.cx, B.cy, rb)) g.fill();
+    const core = rb * (1 - sp(t - ded - 0.12, [110, 21]));  // the amber voice shrinks into the blue one
+    if (core > 0.5) { g.fillStyle = colR; circle(g, B.cx, B.cy, core); g.fill(); }
+  } else if (!merging) {
+    for (const s of shapes) {
+      const col = s.side === 0 ? colL : colR;
+      const r = Math.min(s.w, s.h) / 2;
+      g.fillStyle = col;
+      S.rrect(s.cx - s.w / 2, s.cy - s.h / 2, s.w, s.h, lerp(14 * u, r, sp(t - TM, [130, 17]))); g.fill();
+      tail(s, r, col);
+    }
+    // left voice: "the research says" (lines type in)
+    const [lx, ly, lr] = bubbleState(S, 0);
+    const outA = 1 - range(t, ded - 0.15, ded);
+    g.fillStyle = 'rgba(15,23,42,0.6)';
+    [0.62, 0.86, 0.48].forEach((wf, k) => {
+      const w = lr * 1.1 * wf * sp(t - q - k * 0.2, [170, 24]);
+      if (w > 1) { g.globalAlpha = outA; S.rrect(lx - lr * 0.55, ly - lr * 0.32 + k * lr * 0.3, w, lr * 0.15, lr * 0.075); g.fill(); }
+    });
+    // right voice: the results, as three tiny bars
+    const [rx, ry, rr] = bubbleState(S, 1);
+    [0.42, 0.7, 1].forEach((hf, k) => {
+      const hh = rr * 0.75 * hf * spring(t - res - k * 0.1, ORG);
+      if (hh > 1) { g.globalAlpha = outA; g.fillStyle = 'rgba(15,23,42,0.62)'; S.rrect(rx - rr * 0.48 + k * rr * 0.36, ry + rr * 0.4 - hh, rr * 0.24, hh, rr * 0.06); g.fill(); }
+    });
+    g.globalAlpha = 1;
+  } else {
+    // the pill: one shape, the title locks inside it
+    const s = shapes[0];
+    const breathe = 1 + 0.012 * Math.sin((t - TLOCK) * 2.2) * range(t, TLOCK + 0.4, TLOCK + 1);
+    g.save(); g.translate(s.cx, s.cy); g.scale(breathe, breathe);
+    g.fillStyle = P.blue; S.rrect(-s.w / 2, -s.h / 2, s.w, s.h, Math.min(s.w, s.h) / 2); g.fill();
+    g.clip();
+    const lock = sp(t - TLOCK, [200, 30]);
+    S.text(title, 0, ts * u * 0.33 + (1 - lock) * 14 * u, { size: ts, weight: 600, face: 'display', color: P.ink, align: 'center',
+      tracking: lerp(0.07, 0, lock), alpha: swapAlpha(t, TLOCK - 0.1) });
+    g.restore();
+    // amber lock line: snaps under the title
+    const ul = sp(t - TLOCK - 0.18, SNAP);
+    g.fillStyle = P.amber; S.rrect(s.cx - (s.w * 0.36) * ul, s.cy + s.h / 2 + 22 * u, s.w * 0.72 * ul, 8 * u, 4 * u); g.fill();
+  }
+
+  // numeral: 4 rolls to 5 as the bars morph
+  const v = track(t, [[0, 4], [TM + 0.18, 5]], 200, 28);
+  const nAlpha = 1 - range(t, TLOCK - 0.3, TLOCK + 0.1);
+  odometer(S, v, Ly.nx, Ly.ny, Ly.ns, { alpha: nAlpha });
+  S.text('/5', Ly.nx + measure(S, '5', Ly.ns, 800, 'ui', -0.05) + 12 * u, Ly.ny - Ly.ns * 0.6 * u, { size: 38, weight: 500, face: 'mono', color: P.dim, alpha: nAlpha });
+
+  // recap: 1 2 3 4 5 appear quickly, light up in order
+  if (t >= TRECAP - 0.1) {
+    const ry = S.pick({ portrait: H * 0.68, landscape: H * 0.76 });
+    const gap = S.pick({ portrait: 150, landscape: 132 }) * u, r = 34 * u;
+    const x0 = midX - gap * 2;
+    const line = sp(t - TRECAP - 0.1, [90, 19]);
+    g.strokeStyle = P.slate; g.lineWidth = 4 * u;
+    g.beginPath(); g.moveTo(x0, ry); g.lineTo(lerp(x0, x0 + gap * 4, line), ry); g.stroke();
+    for (let i = 0; i < 5; i++) {
+      const pop = spring(t - TRECAP - i * 0.07, ORG);
+      const on = sp(t - TRECAP - 0.45 - i * 0.12, SNAP);
+      if (pop <= 0) continue;
+      g.fillStyle = mixColor(P.bg, i === 4 ? P.amber : P.blue, on); circle(g, x0 + i * gap, ry, r * pop); g.fill();
+      g.strokeStyle = i === 4 ? P.amber : P.blue; g.lineWidth = 4 * u; circle(g, x0 + i * gap, ry, r * pop); g.stroke();
+      S.text(String(i + 1), x0 + i * gap, ry + 13 * u, { size: 38, weight: 800, color: mixColor(P.dim, i === 4 ? P.bg : P.ink, on), align: 'center', alpha: clamp(pop) });
+    }
+  }
+}
+
+// ── subtitles: English, Inter 600, white on a black pill, bottom 15% ────────
+const SUBS = TIMING.lines.flatMap((l) => l.subs);
+function wrap(S, words, size, maxW) {
+  const lines = [[]]; let w = 0;
+  const space = measure(S, ' ', size, 600);
+  for (const wd of words) {
+    const ww = measure(S, wd, size, 600);
+    if (lines.at(-1).length && w + space + ww > maxW) { lines.push([]); w = 0; }
+    w += (lines.at(-1).length ? space : 0) + ww; lines.at(-1).push(wd);
+  }
+  return lines;
+}
+function subtitles(t, S) {
+  const { g, u } = S;
+  const Ly = lay(S);
+  const sub = SUBS.find((s) => t >= s.from - 0.001 && t < s.to);
+  if (!sub) return;
+  const a = Math.min(range(t, sub.from, sub.from + 0.1), 1 - range(t, sub.to - 0.1, sub.to));
+  const size = Ly.subSize, words = sub.text.split(' ');
+  // which word indices are keys, and when they light
+  const keyAt = new Array(words.length).fill(null);
+  for (const k of sub.keys || []) {
+    const kw = k.text.split(' ');
+    for (let i = 0; i + kw.length <= words.length; i++) {
+      if (kw.every((w, j) => words[i + j].replace(/[^\p{L}\d]/gu, '') === w.replace(/[^\p{L}\d]/gu, ''))) { for (let j = 0; j < kw.length; j++) keyAt[i + j] = k.t; break; }
+    }
+  }
+  const lines = wrap(S, words, size, Ly.subMax - 70 * u);
+  const lh = size * u * 1.32, space = measure(S, ' ', size, 600);
+  const widths = lines.map((ln) => ln.reduce((s, w, i) => s + measure(S, w, size, 600) + (i ? space : 0), 0));
+  const bw = Math.max(...widths) + 64 * u, bh = lh * lines.length + 34 * u;
+  const cx = S.W / 2, top = Ly.subY - bh / 2;
+  g.save(); g.globalAlpha = a;
+  g.fillStyle = 'rgba(0,0,0,0.6)'; S.rrect(cx - bw / 2, top, bw, bh, lines.length === 1 ? bh / 2 : 30 * u); g.fill();
+  let wi = 0;
+  lines.forEach((ln, li) => {
+    let x = cx - widths[li] / 2;
+    const y = top + 17 * u + lh * li + lh * 0.72;
+    for (const w of ln) {
+      const kt = keyAt[wi++];
+      const lit = kt == null ? 0 : range(t, kt, kt + 0.1);
+      x += S.text(w, x, y, { size, weight: 600, color: mixColor('#FFFFFF', P.amber, lit) }) + space;
+    }
+  });
+  g.restore();
+}
+
+// ── the film ────────────────────────────────────────────────────────────────
+function film(t, S) {
+  const { g, W, H } = S;
+  const cX = camX(t, S);
+  dotGrid(S, cX, gridY(t, S));
+
+  if (t < TX + 0.9) scene3(t, S);
+  if (t >= TX && t < TP + 1.1) { g.save(); g.translate(-Math.min(cX, W), 0); scene4(t, S); g.restore(); }
+  const [lx, ly] = lensPos(t, S);
+  const far = Math.max(Math.hypot(lx, ly), Math.hypot(W - lx, ly), Math.hypot(lx, H - ly), Math.hypot(W - lx, H - ly));
+  const iris = spring(t - TI, [80, 17]);
+  const R = lerp(lay(S).vr * 0.66, far * 1.06, iris);
+  const covered = t >= TI && R >= far;
+  if (t >= TP && !covered && t < TU) { g.save(); g.translate(W - cX, 0); scene5(t, S); g.restore(); }
+  if (t >= TI && t < TU + 1.1) {
+    g.save();
+    if (!covered) { circle(g, lx, ly, R); g.clip(); g.fillStyle = P.bg; g.fillRect(0, 0, W, H); dotGrid(S, cX, gridY(t, S)); }
+    g.translate(0, -camY(t, S));
+    scene6(t, S);
+    g.restore();
+    if (!covered) { g.strokeStyle = P.blue; g.lineWidth = Math.max(0, 16 * S.u * (1 - iris)); circle(g, lx, ly, R); g.stroke(); }
+  }
+  if (t >= TU && t < TM + 0.3) { g.save(); g.translate(0, H - camY(t, S)); scene7(t, S); g.restore(); }
+  if (t >= TM) scene8(t, S);
+
+  vignette(S);
+  subtitles(t, S);
+  const fade = range(t, TFADE, DUR);                       // 30 frames to black
+  if (fade > 0) { g.fillStyle = `rgba(0,0,0,${fade})`; g.fillRect(0, 0, W, H); }
+}
+
+// ── sound: SFX on the spoken words, score ducks under the voice ─────────────
+const cues = [
+  { t: 0, type: 'thump', gain: 0.5 },
+  ...ROLL.slice(1, 4).map((r, i) => ({ t: r, type: 'tick', gain: 0.6 + i * 0.1 })),
+  { t: s3.marks.five - 0.02, type: 'impact', gain: 0.8 },
+  ...[0, 1, 2, 3, 4].map((i) => ({ t: 1.2 + i * 0.15, type: 'pop', gain: 0.45 })),
+  { t: s3.marks.before, type: 'swipe', gain: 0.4 },
+  { t: s3.marks.each, type: 'whoosh', gain: 0.35 },
+  ...[0, 1, 2, 3, 4].map((i) => ({ t: s3.marks.each + 0.08 + i * 0.15, type: 'tick', gain: 0.5 })),
+  ...[...'LA RECHERCHE EMPIRIQUE'].map((_, i) => ({ t: s3.marks.emp + i / 34, type: 'type', gain: 0.22 })).filter((_, i) => i % 2 === 0),
+  { t: TX + 0.02, type: 'whoosh', gain: 0.7 },
+  { t: s4.start, type: 'thump', gain: 0.7 },
+  { t: s4.marks.q, type: 'swipe', gain: 0.45 },
+  { t: s4.marks.scope, type: 'pop', gain: 0.6 }, { t: s4.marks.scope + 0.22, type: 'click', gain: 0.6 },
+  { t: s4.marks.rel, type: 'click', gain: 0.6 }, { t: s4.marks.rel + 0.08, type: 'pop', gain: 0.55 },
+  { t: TP, type: 'whoosh', gain: 0.8 },
+  ...[...'Cadre théorique'].map((_, i) => ({ t: s5.marks.q + i / 18, type: 'type', gain: 0.3 })),
+  { t: s5.marks.lens, type: 'swipe', gain: 0.45 },
+  { t: s5.marks.study, type: 'click', gain: 0.8 }, { t: s5.marks.study + 0.03, type: 'chime', gain: 0.25 },
+  { t: TI, type: 'whoosh', gain: 0.75 },
+  { t: s6.start, type: 'thump', gain: 0.55 },
+  { t: s6.marks.q + 0.12, type: 'thump', gain: 0.5 }, { t: s6.marks.q + 0.14, type: 'click', gain: 0.5 },
+  { t: s6.marks.cond + 0.1, type: 'thump', gain: 0.45 }, { t: s6.marks.cond + 0.12, type: 'click', gain: 0.5 },
+  { t: s6.marks.an + 0.1, type: 'thump', gain: 0.45 }, { t: s6.marks.an + 0.12, type: 'click', gain: 0.5 },
+  { t: TU, type: 'whoosh', gain: 0.75 },
+  ...[0, 1, 2].map((i) => ({ t: s7.start + 0.15 + i * 0.12, type: 'tick', gain: 0.6 })),
+  { t: s7.marks.found, type: 'swipe', gain: 0.5 }, { t: s7.marks.found + 0.26, type: 'pop', gain: 0.6 },
+  { t: TM, type: 'swipe', gain: 0.55 }, { t: TM + 0.18, type: 'tick', gain: 0.6 },
+  { t: s8.marks.q, type: 'pop', gain: 0.4 }, { t: s8.marks.res, type: 'pop', gain: 0.4 },
+  { t: TMERGE, type: 'whoosh', gain: 0.6 },
+  { t: TLOCK, type: 'impact', gain: 0.75 },
+  ...[0, 1, 2, 3, 4].map((i) => ({ t: TRECAP + i * 0.07, type: 'tick', gain: 0.5 })),
+  { t: TRECAP + 0.45 + 4 * 0.12, type: 'chime', gain: 0.35 },
+].filter((c) => c.gain > 0);
+
+boot({
+  title: TITLE, dur: DUR, bpm: BPM, formats: FORMATS, palette: P, background: P.bg,
+  music: { style: 'minimal', key: 'D', seed: 3, end: TLOCK, volume: 0.36 },
+  voice: { file: 'audio/voice.wav', volume: 1 },
+  sfxVolume: 0.55,
+  cues,
+  poster: 11.9,
+  draw: film,
+});
+</script>

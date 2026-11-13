@@ -1,0 +1,861 @@
+{
+ "voice": "fr-FR-Neural2-B",
+ "bpm": 120,
+ "dur": 135.935,
+ "lines": [
+  {
+   "id": "a0",
+   "index": 0,
+   "start": 1,
+   "end": 4.847,
+   "dur": 3.847,
+   "marks": {
+    "med": 1.015,
+    "dro": 2.237,
+    "ens": 3.384
+   },
+   "subs": [
+    {
+     "text": "The medical profession, the legal profession, the teaching profession…",
+     "from": 1,
+     "to": 5.097,
+     "keys": [
+      {
+       "text": "medical",
+       "t": 1.015
+      },
+      {
+       "text": "legal",
+       "t": 2.237
+      },
+      {
+       "text": "teaching",
+       "t": 3.384
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "a1",
+   "index": 1,
+   "start": 5.5,
+   "end": 10.129,
+   "dur": 4.629,
+   "marks": {
+    "a": 5.515,
+    "pan": 6.131,
+    "most": 7.463,
+    "reg": 8.298,
+    "ca": 8.869
+   },
+   "subs": [
+    {
+     "text": "there is a whole range of professions,",
+     "from": 5.5,
+     "to": 7.463,
+     "keys": [
+      {
+       "text": "whole range",
+       "t": 6.131
+      }
+     ]
+    },
+    {
+     "text": "most of which are regulated in Canada.",
+     "from": 7.463,
+     "to": 10.379,
+     "keys": [
+      {
+       "text": "regulated",
+       "t": 8.298
+      },
+      {
+       "text": "Canada",
+       "t": 8.869
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "p",
+   "index": 2,
+   "start": 11.5,
+   "end": 18.743,
+   "dur": 7.243,
+   "marks": {
+    "a": 11.515,
+    "b": 13.231,
+    "c": 15.175,
+    "d": 16.725,
+    "pres": 17.23
+   },
+   "subs": [
+    {
+     "text": "From a sociological point of view,",
+     "from": 11.5,
+     "to": 13.231,
+     "keys": [
+      {
+       "text": "sociological",
+       "t": 11.515
+      }
+     ]
+    },
+    {
+     "text": "how do these professions work?",
+     "from": 13.231,
+     "to": 15.175,
+     "keys": [
+      {
+       "text": "work?",
+       "t": 13.231
+      }
+     ]
+    },
+    {
+     "text": "Why is it hard for some people",
+     "from": 15.175,
+     "to": 16.725,
+     "keys": []
+    },
+    {
+     "text": "to enter a prestigious profession?",
+     "from": 16.725,
+     "to": 18.993,
+     "keys": [
+      {
+       "text": "prestigious",
+       "t": 17.23
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s",
+   "index": 3,
+   "start": 20,
+   "end": 24.844,
+   "dur": 4.844,
+   "marks": {
+    "three": 20.335,
+    "exp": 21.447,
+    "est": 23.088
+   },
+   "subs": [
+    {
+     "text": "Here are 3 theoretical approaches",
+     "from": 20,
+     "to": 21.447,
+     "keys": [
+      {
+       "text": "3 theoretical approaches",
+       "t": 20.335
+      }
+     ]
+    },
+    {
+     "text": "that explain how established professions work overall.",
+     "from": 21.447,
+     "to": 25.094,
+     "keys": [
+      {
+       "text": "established professions",
+       "t": 23.088
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "f",
+   "index": 4,
+   "start": 26,
+   "end": 32.971,
+   "dur": 6.971,
+   "marks": {
+    "n": 26.015,
+    "name": 26.44,
+    "a": 27.584,
+    "crit": 28.976,
+    "pre": 29.923,
+    "grp": 30.647,
+    "etat": 31.855
+   },
+   "subs": [
+    {
+     "text": "1. The functionalist approach:",
+     "from": 26,
+     "to": 27.584,
+     "keys": [
+      {
+       "text": "functionalist",
+       "t": 26.44
+      }
+     ]
+    },
+    {
+     "text": "professions work with criteria and rules",
+     "from": 27.584,
+     "to": 29.923,
+     "keys": [
+      {
+       "text": "criteria",
+       "t": 28.976
+      },
+      {
+       "text": "rules",
+       "t": 28.976
+      }
+     ]
+    },
+    {
+     "text": "set in advance by professional groups and the State.",
+     "from": 29.923,
+     "to": 33.221,
+     "keys": [
+      {
+       "text": "set in advance",
+       "t": 29.923
+      },
+      {
+       "text": "professional groups",
+       "t": 30.647
+      },
+      {
+       "text": "State.",
+       "t": 31.855
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fx",
+   "index": 5,
+   "start": 34,
+   "end": 55.852,
+   "dur": 21.852,
+   "marks": {
+    "a": 34.015,
+    "par": 34.175,
+    "b": 36.753,
+    "soi": 39.841,
+    "def": 40.522,
+    "ins": 41.245,
+    "c": 42.507,
+    "sav": 44.441,
+    "for": 45.791,
+    "code": 46.984,
+    "perm": 48.185,
+    "d": 50.094,
+    "prov": 50.834,
+    "ord": 53.465
+   },
+   "subs": [
+    {
+     "text": "For Talcott Parsons, in 1939,",
+     "from": 34,
+     "to": 36.753,
+     "keys": [
+      {
+       "text": "Talcott Parsons,",
+       "t": 34.175
+      }
+     ]
+    },
+    {
+     "text": "professions fulfil a function essential to society:",
+     "from": 36.753,
+     "to": 39.841,
+     "keys": [
+      {
+       "text": "essential",
+       "t": 36.753
+      }
+     ]
+    },
+    {
+     "text": "healing, defending, teaching.",
+     "from": 39.841,
+     "to": 42.507,
+     "keys": [
+      {
+       "text": "healing,",
+       "t": 39.841
+      },
+      {
+       "text": "defending,",
+       "t": 40.522
+      },
+      {
+       "text": "teaching.",
+       "t": 41.245
+      }
+     ]
+    },
+    {
+     "text": "They are recognized by precise attributes:",
+     "from": 42.507,
+     "to": 44.441,
+     "keys": []
+    },
+    {
+     "text": "specialized knowledge, long training,",
+     "from": 44.441,
+     "to": 46.984,
+     "keys": [
+      {
+       "text": "specialized knowledge,",
+       "t": 44.441
+      },
+      {
+       "text": "long training,",
+       "t": 45.791
+      }
+     ]
+    },
+    {
+     "text": "a code of ethics and a licence to practise.",
+     "from": 46.984,
+     "to": 50.094,
+     "keys": [
+      {
+       "text": "code of ethics",
+       "t": 46.984
+      },
+      {
+       "text": "licence",
+       "t": 48.185
+      }
+     ]
+    },
+    {
+     "text": "In Canada, the provinces and territories regulate them,",
+     "from": 50.094,
+     "to": 53.465,
+     "keys": [
+      {
+       "text": "provinces and territories",
+       "t": 50.834
+      }
+     ]
+    },
+    {
+     "text": "often through professional orders.",
+     "from": 53.465,
+     "to": 56.102,
+     "keys": [
+      {
+       "text": "professional orders.",
+       "t": 53.465
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "i",
+   "index": 6,
+   "start": 57,
+   "end": 63.348,
+   "dur": 6.348,
+   "marks": {
+    "n": 57.015,
+    "name": 57.455,
+    "a": 58.636,
+    "neg": 60.729,
+    "sat": 61.315
+   },
+   "subs": [
+    {
+     "text": "2. The interactionist approach:",
+     "from": 57,
+     "to": 58.636,
+     "keys": [
+      {
+       "text": "interactionist",
+       "t": 57.455
+      }
+     ]
+    },
+    {
+     "text": "professions work with criteria,",
+     "from": 58.636,
+     "to": 60.729,
+     "keys": [
+      {
+       "text": "criteria,",
+       "t": 58.636
+      }
+     ]
+    },
+    {
+     "text": "but negotiated to the clients’ satisfaction.",
+     "from": 60.729,
+     "to": 63.598,
+     "keys": [
+      {
+       "text": "negotiated",
+       "t": 60.729
+      },
+      {
+       "text": "satisfaction.",
+       "t": 61.315
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ix",
+   "index": 7,
+   "start": 64,
+   "end": 77.971,
+   "dur": 13.971,
+   "marks": {
+    "a": 64.015,
+    "chi": 64.927,
+    "b": 66.264,
+    "cli": 68.71,
+    "col": 69.617,
+    "pub": 70.136,
+    "c": 71.475,
+    "day": 72.587,
+    "d": 74.119,
+    "gag": 75.302,
+    "conv": 76.047
+   },
+   "subs": [
+    {
+     "text": "For Everett Hughes and the Chicago School,",
+     "from": 64,
+     "to": 66.264,
+     "keys": [
+      {
+       "text": "Everett Hughes",
+       "t": 64.015
+      },
+      {
+       "text": "Chicago School,",
+       "t": 64.927
+      }
+     ]
+    },
+    {
+     "text": "a profession is built through interactions:",
+     "from": 66.264,
+     "to": 68.71,
+     "keys": [
+      {
+       "text": "interactions:",
+       "t": 66.264
+      }
+     ]
+    },
+    {
+     "text": "with clients, colleagues and the public.",
+     "from": 68.71,
+     "to": 71.475,
+     "keys": [
+      {
+       "text": "clients,",
+       "t": 68.71
+      },
+      {
+       "text": "colleagues",
+       "t": 69.617
+      },
+      {
+       "text": "public.",
+       "t": 70.136
+      }
+     ]
+    },
+    {
+     "text": "What counts as good work is negotiated day to day.",
+     "from": 71.475,
+     "to": 74.119,
+     "keys": [
+      {
+       "text": "negotiated",
+       "t": 72.587
+      }
+     ]
+    },
+    {
+     "text": "And the title of profession is earned:",
+     "from": 74.119,
+     "to": 76.047,
+     "keys": [
+      {
+       "text": "earned:",
+       "t": 75.302
+      }
+     ]
+    },
+    {
+     "text": "others have to be convinced.",
+     "from": 76.047,
+     "to": 78.221,
+     "keys": [
+      {
+       "text": "convinced.",
+       "t": 76.047
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "c",
+   "index": 8,
+   "start": 79.5,
+   "end": 89.079,
+   "dur": 9.579,
+   "marks": {
+    "n": 79.515,
+    "name": 79.94,
+    "a": 81.265,
+    "mais": 83.422,
+    "ferm": 84.428,
+    "pres": 85.639,
+    "ctrl": 86.783
+   },
+   "subs": [
+    {
+     "text": "3. The conflict approach:",
+     "from": 79.5,
+     "to": 81.265,
+     "keys": [
+      {
+       "text": "conflict",
+       "t": 79.94
+      }
+     ]
+    },
+    {
+     "text": "professions work with criteria,",
+     "from": 81.265,
+     "to": 83.422,
+     "keys": []
+    },
+    {
+     "text": "but these criteria aim to create closures,",
+     "from": 83.422,
+     "to": 85.639,
+     "keys": [
+      {
+       "text": "closures,",
+       "t": 84.428
+      }
+     ]
+    },
+    {
+     "text": "to increase prestige and control of the services market.",
+     "from": 85.639,
+     "to": 89.329,
+     "keys": [
+      {
+       "text": "prestige",
+       "t": 85.639
+      },
+      {
+       "text": "control",
+       "t": 86.783
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "cx",
+   "index": 9,
+   "start": 90,
+   "end": 110.067,
+   "dur": 20.067,
+   "marks": {
+    "a": 90.015,
+    "lar": 90.17,
+    "b": 93.431,
+    "proj": 94.506,
+    "mkt": 95.896,
+    "stat": 96.873,
+    "c": 98.542,
+    "exa": 99.819,
+    "pla": 100.538,
+    "clo": 101.698,
+    "web": 103.196,
+    "d": 105.633,
+    "more": 106.731,
+    "mono": 107.914
+   },
+   "subs": [
+    {
+     "text": "For Magali Sarfatti Larson, in 1977,",
+     "from": 90,
+     "to": 93.431,
+     "keys": [
+      {
+       "text": "Magali Sarfatti Larson,",
+       "t": 90.17
+      }
+     ]
+    },
+    {
+     "text": "a profession pursues a “professional project”:",
+     "from": 93.431,
+     "to": 95.896,
+     "keys": [
+      {
+       "text": "“professional project”:",
+       "t": 94.506
+      }
+     ]
+    },
+    {
+     "text": "controlling its market and raising its status.",
+     "from": 95.896,
+     "to": 98.542,
+     "keys": [
+      {
+       "text": "controlling its market",
+       "t": 95.896
+      },
+      {
+       "text": "raising its status.",
+       "t": 96.873
+      }
+     ]
+    },
+    {
+     "text": "Required degrees, exams, limited places:",
+     "from": 98.542,
+     "to": 101.698,
+     "keys": [
+      {
+       "text": "Required degrees,",
+       "t": 98.542
+      },
+      {
+       "text": "exams,",
+       "t": 99.819
+      },
+      {
+       "text": "limited places:",
+       "t": 100.538
+      }
+     ]
+    },
+    {
+     "text": "this is social closure, a concept inherited from Max Weber.",
+     "from": 101.698,
+     "to": 105.633,
+     "keys": [
+      {
+       "text": "social closure,",
+       "t": 101.698
+      },
+      {
+       "text": "Max Weber.",
+       "t": 103.196
+      }
+     ]
+    },
+    {
+     "text": "Fewer practitioners means more prestige",
+     "from": 105.633,
+     "to": 107.914,
+     "keys": [
+      {
+       "text": "Fewer practitioners",
+       "t": 105.633
+      },
+      {
+       "text": "more prestige",
+       "t": 106.731
+      }
+     ]
+    },
+    {
+     "text": "and a monopoly over services.",
+     "from": 107.914,
+     "to": 110.317,
+     "keys": [
+      {
+       "text": "monopoly",
+       "t": 107.914
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "r",
+   "index": 10,
+   "start": 111.5,
+   "end": 118.067,
+   "dur": 6.567,
+   "marks": {
+    "a": 111.515,
+    "b": 112.057,
+    "f": 113.353,
+    "i": 114.439,
+    "c": 115.897
+   },
+   "subs": [
+    {
+     "text": "Three lenses on the same criteria:",
+     "from": 111.5,
+     "to": 113.353,
+     "keys": [
+      {
+       "text": "same criteria:",
+       "t": 112.057
+      }
+     ]
+    },
+    {
+     "text": "set in advance, negotiated with clients, or used to close off access.",
+     "from": 113.353,
+     "to": 118.317,
+     "keys": [
+      {
+       "text": "set in advance,",
+       "t": 113.353
+      },
+      {
+       "text": "negotiated",
+       "t": 114.439
+      },
+      {
+       "text": "close off access.",
+       "t": 115.897
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "k",
+   "index": 11,
+   "start": 119,
+   "end": 130.009,
+   "dur": 11.009,
+   "marks": {
+    "a": 119.015,
+    "comp": 120.802,
+    "ns": 121.509,
+    "int": 122.493,
+    "log": 124.15,
+    "pres": 124.624,
+    "ferm": 125.446,
+    "ctrl": 126.171,
+    "ent": 126.784,
+    "top": 127.654
+   },
+   "subs": [
+    {
+     "text": "So research has found",
+     "from": 119,
+     "to": 120.802,
+     "keys": [
+      {
+       "text": "research",
+       "t": 119.015
+      }
+     ]
+    },
+    {
+     "text": "that skills are not enough to enter a profession:",
+     "from": 120.802,
+     "to": 124.15,
+     "keys": [
+      {
+       "text": "skills",
+       "t": 120.802
+      },
+      {
+       "text": "not enough",
+       "t": 121.509
+      }
+     ]
+    },
+    {
+     "text": "logics of prestige, closure and control",
+     "from": 124.15,
+     "to": 126.784,
+     "keys": [
+      {
+       "text": "prestige,",
+       "t": 124.624
+      },
+      {
+       "text": "closure",
+       "t": 125.446
+      },
+      {
+       "text": "control",
+       "t": 126.171
+      }
+     ]
+    },
+    {
+     "text": "prevail at the entrance to the most prestigious professions.",
+     "from": 126.784,
+     "to": 130.259,
+     "keys": [
+      {
+       "text": "most prestigious",
+       "t": 127.654
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "e",
+   "index": 12,
+   "start": 131.5,
+   "end": 135.935,
+   "dur": 4.435,
+   "marks": {
+    "a": 131.515,
+    "soc": 132.377,
+    "b": 134.115
+   },
+   "subs": [
+    {
+     "text": "To learn more",
+     "from": 131.5,
+     "to": 132.377,
+     "keys": [
+      {
+       "text": "learn more",
+       "t": 131.515
+      }
+     ]
+    },
+    {
+     "text": "about the sociology of professions,",
+     "from": 132.377,
+     "to": 134.115,
+     "keys": [
+      {
+       "text": "sociology of professions,",
+       "t": 132.377
+      }
+     ]
+    },
+    {
+     "text": "here are two references.",
+     "from": 134.115,
+     "to": 136.185,
+     "keys": []
+    }
+   ]
+  }
+ ]
+}

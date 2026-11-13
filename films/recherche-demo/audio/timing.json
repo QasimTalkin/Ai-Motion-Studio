@@ -1,0 +1,189 @@
+{
+ "voice": "fr-FR-Neural2-B",
+ "bpm": 120,
+ "dur": 30.026,
+ "lines": [
+  {
+   "id": "s3-solution",
+   "index": 0,
+   "start": 0.5,
+   "end": 8.208,
+   "dur": 7.708,
+   "marks": {
+    "five": 0.84,
+    "before": 2.56,
+    "each": 4.918,
+    "emp": 6.725
+   },
+   "subs": [
+    {
+     "text": "Here are 5 questions researchers ask first.",
+     "from": 0.5,
+     "to": 4.918,
+     "keys": [
+      {
+       "text": "5 questions",
+       "t": 0.84
+      }
+     ]
+    },
+    {
+     "text": "Each is the beginning of a stage in empirical research.",
+     "from": 4.918,
+     "to": 8.458,
+     "keys": [
+      {
+       "text": "empirical research",
+       "t": 6.725
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s4-problematique",
+   "index": 1,
+   "start": 9,
+   "end": 13.269,
+   "dur": 4.269,
+   "marks": {
+    "n": 9.015,
+    "q": 9.536,
+    "scope": 10.609,
+    "rel": 11.776
+   },
+   "subs": [
+    {
+     "text": "1. What is the problem, its scope, and its relevance?",
+     "from": 9,
+     "to": 13.519,
+     "keys": [
+      {
+       "text": "scope",
+       "t": 10.609
+      },
+      {
+       "text": "relevance",
+       "t": 11.776
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s5-cadre",
+   "index": 2,
+   "start": 14,
+   "end": 16.566,
+   "dur": 2.566,
+   "marks": {
+    "n": 14.015,
+    "q": 14.655,
+    "lens": 15.067,
+    "study": 15.402
+   },
+   "subs": [
+    {
+     "text": "2. Through what lens should we study it?",
+     "from": 14,
+     "to": 16.816,
+     "keys": [
+      {
+       "text": "lens",
+       "t": 15.067
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s6-methodo",
+   "index": 3,
+   "start": 17.5,
+   "end": 20.492,
+   "dur": 2.992,
+   "marks": {
+    "n": 17.515,
+    "q": 18.117,
+    "cond": 18.432,
+    "an": 19.318
+   },
+   "subs": [
+    {
+     "text": "3. How and under what conditions should we analyze it?",
+     "from": 17.5,
+     "to": 20.742,
+     "keys": [
+      {
+       "text": "How",
+       "t": 18.117
+      },
+      {
+       "text": "conditions",
+       "t": 18.432
+      },
+      {
+       "text": "analyze",
+       "t": 19.318
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s7-resultats",
+   "index": 4,
+   "start": 21,
+   "end": 22.742,
+   "dur": 1.742,
+   "marks": {
+    "n": 21.015,
+    "q": 21.586,
+    "found": 22
+   },
+   "subs": [
+    {
+     "text": "4. What did we find?",
+     "from": 21,
+     "to": 22.992,
+     "keys": [
+      {
+       "text": "find",
+       "t": 22
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "s8-discussion",
+   "index": 5,
+   "start": 24,
+   "end": 27.826,
+   "dur": 3.826,
+   "marks": {
+    "n": 24.015,
+    "q": 24.605,
+    "res": 25.416,
+    "ded": 26.213
+   },
+   "subs": [
+    {
+     "text": "5. What does the research say, and what can we deduce?",
+     "from": 24,
+     "to": 28.076,
+     "keys": [
+      {
+       "text": "research",
+       "t": 24.605
+      },
+      {
+       "text": "deduce",
+       "t": 26.213
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
