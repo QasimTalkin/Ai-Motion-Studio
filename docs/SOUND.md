@@ -67,6 +67,8 @@ re-running only calls the API for lines that changed.
   hit the exact word: `L.intro.marks.name`.
 - Lines start at `at` (seconds), else after the previous line plus `gap` (`bpm` + `snap` puts them on beats).
 - `subs` are subtitles timed by marks; `keys` lights single words of a subtitle when their mark is spoken.
+- A line's own `voice` is merged over the script's, for a second speaker (an interview, a quote). Voices
+  that return no word timings (Chirp 3 HD) take `at` and `keys` in seconds into the line instead of marks.
 - Load the timings at the top of the film and mix the voice in:
 
 ```js

@@ -17,9 +17,11 @@
 //     "bpm": 96, "snap": 1,    optional: start every line on the next beat (snap = beats per step)
 //     "lines": [
 //       { "id": "intro", "text": "Meet {name}Orbit. {fast}The fastest way to plan a week.",
-//         "subs": [{ "text": "Meet Orbit.", "keys": { "Orbit": "name" } }, { "text": "The fastest way ...", "at": "fast" }] }
+//         "subs": [{ "text": "Meet Orbit.", "keys": { "Orbit": "name" } }, { "text": "The fastest way ...", "at": "fast" }] },
+//       { "id": "quote", "voice": { "name": "en-US-Neural2-F" }, "text": "A second speaker." }
 //     ]
 //   }
+// A line's "voice" is merged over the script's voice, for a second speaker (an interview, a quote).
 // {name} in "text" becomes an SSML mark: its time lands in timing.json as lines[i].marks.name, so the
 // picture can hit the exact word. "ssml" may be given instead of "text" for full control.
 // A subtitle's "at" is a mark name or seconds into the line; it holds until the next subtitle or the line end.
@@ -93,12 +95,13 @@ export async function tts(dir, { force = false } = {}) {
   const clips = [];
   for (const line of script.lines) {
     const ssml = line.ssml || toSsml(line.text);
-    const hash = createHash('sha1').update(JSON.stringify({ voice, ssml })).digest('hex').slice(0, 10);
+    const lv = line.voice ? { ...voice, ...line.voice } : voice;
+    const hash = createHash('sha1').update(JSON.stringify({ voice: lv, ssml })).digest('hex').slice(0, 10);
     const wav = join(vo, `${line.id}-${hash}.wav`), meta = wav.replace(/\.wav$/, '.json');
     if (force || !existsSync(wav) || !existsSync(meta)) {
       key ||= envKey('GOOGLE_TTS_API_KEY');
       if (!key) fail('GOOGLE_TTS_API_KEY is not set. Add it to .env (see .env.example).');
-      const res = await synth(key, voice, ssml);
+      const res = await synth(key, lv, ssml);
       writeFileSync(wav, Buffer.from(res.audioContent, 'base64'));
       writeFileSync(meta, JSON.stringify({ ssml, timepoints: res.timepoints || [] }, null, 1));
       console.log(`  ✓ ${line.id}  (synthesized)`);
